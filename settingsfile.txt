@@ -1,0 +1,7 @@
+Nx 6
+Ny 5
+CFL 0.8
+splitting_scheme naive_splitting
+test_case ST1
+output 1
+outputpath ./
