@@ -16,7 +16,7 @@
 
 int main()
 {
-	std::cout << " - Beginning simulation.." << std::endl;
+	std::cout << "[main] Beginning simulation.." << std::endl;
 	
 	settings_file SF;
 	SF.read_settings_file("./settingsfile.txt");
@@ -30,8 +30,8 @@ int main()
 	
 	double endtime = omp_get_wtime();
 	
-	std::cout << " - Simulation exited with status = " << status << std::endl;
-	std::cout << " - The wall clock runtime was " << endtime - starttime << "s." << std::endl;
+	std::cout << "[main] Simulation exited with status = " << status << std::endl;
+	std::cout << "[main] The wall clock runtime was " << endtime - starttime << "s." << std::endl;
 	
 	return 0;
 }

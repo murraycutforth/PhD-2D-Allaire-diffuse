@@ -1,5 +1,5 @@
 Nx 6
-Ny 5
+Ny 6
 CFL 0.8
 splitting_scheme naive_splitting
 test_case ST1
