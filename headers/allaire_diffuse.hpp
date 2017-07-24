@@ -25,7 +25,7 @@ class allaire_diffuse : public problem_base {
 	double gamma2;
 	double pinf1;
 	double pinf2;
-	
+		
 	
 	// Functions specific to this problem
 	

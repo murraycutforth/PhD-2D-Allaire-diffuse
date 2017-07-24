@@ -12,14 +12,35 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	params.CFL = SF.CFL;
 	params.outputname = SF.basename;
 	
-	if (SF.test_case == "ST1")
+	if (SF.riemann_solver == "HLLC")
 	{
-		// Solvers used:
-		
-		// TODO: pointer to riemann solver?
-		// TODO: pointer to flux solver?
-		params.numGC = 1;
+		// TODO: pointer to abstract Riemann solver class
 	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid riemann_solver in settings file.");
+	}
+	
+	if (SF.flux_solver == "Godunov")
+	{
+		params.numGC = 1;
+		// TODO: pointer to abstract flux solver class?
+	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid flux_solver in settings file.");
+	}
+	
+	if (SF.volfracupdater == "Upwind")
+	{
+		// TODO: pointer to abstract volume fraction update class?
+	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid volfracupdater in settings file.");
+	}
+	
+		
 	
 	gridtype ICgrid (SF.Ny + 2 * params.numGC, rowtype(SF.Nx + 2 * params.numGC, vectype(6)));
 	
