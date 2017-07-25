@@ -43,6 +43,8 @@ class allaire_diffuse : public problem_base {
 	
 	void set_boundary_conditions (gridtype& grid, const sim_info& params);
 	
+	void vtk_output (const gridtype& grid, const sim_info& params, int n, double t);
+	
 	
 	// Over-ride all pure virtual member functions of problem_base
 	

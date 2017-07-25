@@ -31,8 +31,8 @@ EXTINCLIST := $(EIGEN) $(HCLFRAMEWORK) $(INCLIST)
 
 # Shared Compiler Flags
 OPLEVEL := -O3
-CFLAGS := -Wall -c -fopenmp -g -std=c++11 $(OPLEVEL)
-LINKFLAGS := -fopenmp $(OPLEVEL)
+CFLAGS := -Wall -c -pg -g -std=c++11 $(OPLEVEL)
+LINKFLAGS := -pg -fopenmp $(OPLEVEL)
 
 # Linking Step
 $(TARGET): $(OBJECTS)

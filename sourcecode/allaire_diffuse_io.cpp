@@ -1,10 +1,12 @@
 #include "allaire_diffuse.hpp"
 #include "stiffened_gas_eos.hpp"
 #include "flux_solver_godunov.hpp"
+#include "mixturemodel.hpp"
 #include "riemann_solver_HLLC.hpp"
 #include <iostream>
 #include <cmath>
 #include <memory>
+#include <fstream>
 #include <string>
 
 std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info& params)
@@ -128,10 +130,108 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		
 	return std::make_shared<gridtype>(ICgrid);
 }
+
+void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params, int n, double t)
+{
+	std::string filename5 = params.outputname + "-state-" + std::to_string(n) + ".vtk";
+	std::ofstream outfile5;
+	outfile5.open(filename5);
+	outfile5 << "# vtk DataFile Version 3.0\n";
+	outfile5 << "Fluid state\n";
+	outfile5 << "ASCII\n";
+	outfile5 << "DATASET RECTILINEAR_GRID\n";
+
+	outfile5 << "FIELD FieldData 2\n";
+	outfile5 << "TIME 1 1 double\n";
+	outfile5 << t << std::endl;
+	outfile5 << "CYCLE 1 1 int\n";
+	outfile5 << n << std::endl;
+
+	outfile5 << "DIMENSIONS " + std::to_string(params.Nx+1) + " " + std::to_string(params.Ny+1) + " 1\n";
+	outfile5 << "X_COORDINATES " + std::to_string(params.Nx+1) + " double\n";
+	for (int i=0; i<params.Nx+1; i++)
+	{
+		outfile5 << params.x0 + double(i)*params.dx << " ";
+	}
+	outfile5 << std::endl;
+	outfile5 << "Y_COORDINATES " + std::to_string(params.Ny+1) + " double\n";
+	for (int j=0; j<params.Ny+1; j++)
+	{
+		outfile5 << params.y0 + double(j)*params.dy << " ";
+	}
+	outfile5 << std::endl;
+	outfile5 << "Z_COORDINATES 1 double\n";
+	outfile5 << "0\n";
+	outfile5 << "CELL_DATA " + std::to_string(params.Nx*params.Ny) + "\n";
+
+	outfile5 << "VECTORS vfield double\n";
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			double rho = grid[i][j](0) + grid[i][j](1);
+			double u = grid[i][j](2) / rho;
+			double v = grid[i][j](3) / rho;
+			outfile5 << u << " " << v << " " << 0.0  << "\n";
+		}
+	}
+
+	outfile5 << "FIELD FieldData 1\n";
+	outfile5 << "Density 1 " + std::to_string(params.Nx*params.Ny) + " double\n";
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			double rho = grid[i][j](0) + grid[i][j](1);
+			outfile5 << rho << "\n";
+		}
+	}
+	
+	outfile5 << "FIELD FieldData 1\n";
+	outfile5 << "Pressure 1 " + std::to_string(params.Nx*params.Ny) + " double\n";
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			double rho = grid[i][j](0) + grid[i][j](1);
+			double u = grid[i][j](2) / rho;
+			double v = grid[i][j](3) / rho;
+			double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
+			double z = grid[i][j](5);
+			double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+			outfile5 << p << "\n";
+		}
+	}
+	
+	outfile5 << "FIELD FieldData 1\n";
+	outfile5 << "Specificinternalenergy 1 " + std::to_string(params.Nx*params.Ny) + " double\n";
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			double rho = grid[i][j](0) + grid[i][j](1);
+			double u = grid[i][j](2) / rho;
+			double v = grid[i][j](3) / rho;
+			double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
+			outfile5 << e << "\n";
+		}
+	}
+	
+	outfile5 << "FIELD FieldData 1\n";
+	outfile5 << "Volumefraction 1 " + std::to_string(params.Nx*params.Ny) + " double\n";
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			outfile5 << grid[i][j](5) << "\n";
+		}
+	}
+}
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)
 {
-	// TODO: gnuplot and VISIT output
-	
-
+	if (n==0 || t==params.T)
+	{
+		vtk_output(grid, params, n, t);
+	}
 }
