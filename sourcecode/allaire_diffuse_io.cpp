@@ -1,5 +1,7 @@
 #include "allaire_diffuse.hpp"
 #include "stiffened_gas_eos.hpp"
+#include "flux_solver_godunov.hpp"
+#include "riemann_solver_HLLC.hpp"
 #include <iostream>
 #include <cmath>
 #include <memory>
@@ -12,51 +14,18 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	params.CFL = SF.CFL;
 	params.outputname = SF.basename;
 	
-	if (SF.riemann_solver == "HLLC")
-	{
-		// TODO: pointer to abstract Riemann solver class
-	}
-	else
-	{
-		assert(!"[allaire_diffuse] Invalid riemann_solver in settings file.");
-	}
+	std::shared_ptr<riemann_solver_base> RS_ptr = nullptr;
 	
-	if (SF.flux_solver == "Godunov")
-	{
-		params.numGC = 1;
-		// TODO: pointer to abstract flux solver class?
-	}
-	else
-	{
-		assert(!"[allaire_diffuse] Invalid flux_solver in settings file.");
-	}
 	
-	if (SF.volfracupdater == "Upwind")
-	{
-		// TODO: pointer to abstract volume fraction update class?
-	}
-	else
-	{
-		assert(!"[allaire_diffuse] Invalid volfracupdater in settings file.");
-	}
-	
-		
-	
-	gridtype ICgrid (SF.Ny + 2 * params.numGC, rowtype(SF.Nx + 2 * params.numGC, vectype(6)));
+	// EOS parameters, computational domain and boundary conditions
 	
 	if (SF.test_case == "ST1")
 	{
-
-		// EOS parameters:
-		
 		gamma1 = 1.4;
 		gamma2 = 2.4;
 		pinf1 = 0.0;
 		pinf2 = 0.0;
-		
-		
-		// Computational domain and boundary conditions:
-		
+
 		params.x0 = 0.0;
 		params.y0 = 0.0;
 		params.dx = 1.0/params.Nx;
@@ -66,10 +35,58 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_T = "transmissive";
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
-		
-		
-		// Initial fluid states:
-		
+	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid test_case in settings file.");
+	}
+	
+	
+	// Number of ghost cells needed
+	
+	if (SF.flux_solver == "Godunov")
+	{
+		params.numGC = 1;
+		params.stclsize = 1;
+	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid flux_solver in settings file.");
+	}
+	
+	
+	// Riemann solver object
+	
+	if (SF.riemann_solver == "HLLC")
+	{
+		RS_ptr = std::make_shared<HLLC_riemann_solver>(params, gamma1, gamma2, pinf1, pinf2);
+	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid riemann_solver in settings file.");
+	}
+	
+	
+	// Flux solver object
+	
+	if (SF.flux_solver == "Godunov")
+	{
+		FS_ptr = std::make_shared<flux_solver_godunov>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
+		zupdate_ptr = std::make_shared<zupdate_upwind>();
+	}
+	else
+	{
+		assert(!"[allaire_diffuse] Invalid flux_solver in settings file.");
+	}
+			
+	
+	gridtype ICgrid (SF.Ny + 2 * params.numGC, rowtype(SF.Nx + 2 * params.numGC, vectype(6)));
+	
+	
+	// Initial states
+	
+	if (SF.test_case == "ST1")
+	{
 		double rho1 = 1.0;
 		double p1 = 1.0;
 		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
@@ -80,11 +97,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		double v = 0.0;
 		double z;
 		
-		for (int i=0; i<SF.Ny; i++)
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
 		{
-			for (int j=0; j<SF.Nx; j++)
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
-				if (j < SF.Nx / 2)
+				if (j < params.Nx / 2)
 				{
 					// Fluid 1 here
 					z = 1.0;
@@ -114,18 +131,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)
 {
-	// Print info to screen for verification
+	// TODO: gnuplot and VISIT output
 	
-	std::cout << std::endl << "[allaire_diffuse] Outputting..." << std::endl;
-	std::cout << "[allaire_diffuse] Current state of grid is: " << std::endl;
-	
-	for (int i=0; i<params.Ny; i++)
-	{
-		for (int j=0; j<params.Nx; j++)
-		{
-			std::cout << "(" << grid[i][j](0) << "," << grid[i][j](1) << "," << grid[i][j](2) << "," << grid[i][j](3) << "," << grid[i][j](4) << "," << grid[i][j](5) << ")" << "\t";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
+
 }

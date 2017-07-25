@@ -30,7 +30,7 @@ BUILDLIST := $(BUILDDIR)
 EXTINCLIST := $(EIGEN) $(HCLFRAMEWORK) $(INCLIST)
 
 # Shared Compiler Flags
-OPLEVEL := -O1
+OPLEVEL := -O3
 CFLAGS := -Wall -c -fopenmp -g -std=c++11 $(OPLEVEL)
 LINKFLAGS := -fopenmp $(OPLEVEL)
 

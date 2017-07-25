@@ -9,9 +9,10 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 {
 	// Storage for flux and velocity across each internal cell edge
 	
-	rowtype fluxes (params.Nx + 2 * params.numGC, vectype(6))
-	std::vector<double> u_stars (params.Nx + 2 * params.numGC, 0.0)
-	
+	rowtype fluxes (params.Nx + 2 * params.numGC, vectype(6));
+	std::vector<double> u_stars (params.Nx + 2 * params.numGC, 0.0);
+	std::vector<double> z_stars (params.Nx + 2 * params.numGC, 0.0);
+		
 	
 	// Compute cell edge fluxes across each edge of this row
 		
@@ -23,19 +24,25 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 		{
 			stencil.push_back(grid[i][l]);
 		}
-		
-		// TODO: call flux solver here with stencil
-		// TODO: save results in fluxes and u_star
+
+		FS_ptr->flux_computation(stencil, fluxes[j], u_stars[j], z_stars[j]);
 	}
-	
+		
 	
 	// Conservative update formula
 	
 	for (int j=params.numGC; j < params.Nx + params.numGC; j++)
 	{
 		future_grid[i][j] = grid[i][j] + (dt / params.dx) * (fluxes[j] - fluxes[j+1]);
-		
-		
-		// TODO: call volume fraction update
 	}
+	
+	
+	// Volume fraction update formula
+	
+	for (int j=params.numGC; j < params.Nx + params.numGC; j++)
+	{
+		future_grid[i][j](5) = zupdate_ptr->zupdate(params.dx, dt, grid[i][j-1](5), grid[i][j](5), grid[i][j+1](5), 
+							    u_stars[j], u_stars[j+1], z_stars[j], z_stars[j+1]);
+	}
+	
 }

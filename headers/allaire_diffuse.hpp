@@ -14,6 +14,8 @@
 #include "sim_info.hpp"
 #include "typedefs.hpp"
 #include "settings_file.hpp"
+#include "flux_solver_base.hpp"
+#include "zupdate.hpp"
 
 class allaire_diffuse : public problem_base {
 	
@@ -25,6 +27,16 @@ class allaire_diffuse : public problem_base {
 	double gamma2;
 	double pinf1;
 	double pinf2;
+	
+	
+	// Algorithm for updating conservative variables
+	
+	std::shared_ptr<flux_solver_base> FS_ptr;
+	
+	
+	// Algorithm for updating diffuse volume fractions
+	
+	std::shared_ptr<zupdate_base> zupdate_ptr;
 		
 	
 	// Functions specific to this problem
@@ -38,7 +50,7 @@ class allaire_diffuse : public problem_base {
 	
 	void output (const gridtype& grid, const sim_info& params, int n, double t);
 	
-	double compute_dt (const gridtype& grid, const sim_info& params, double t);
+	double compute_dt (const gridtype& grid, const sim_info& params, int n, double t);
 	
 	void pre_sweep (gridtype& grid, const sim_info& params);
 	
