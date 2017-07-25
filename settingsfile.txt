@@ -1,9 +1,9 @@
-Nx 300
-Ny 300
+Nx 512
+Ny 512
 CFL 0.8
 splitting_scheme naive_splitting
 test_case ST1
 output 1
-outputpath ./
+outputpath ./output/
 flux_solver Godunov
 riemann_solver HLLC

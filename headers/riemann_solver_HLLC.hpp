@@ -37,7 +37,7 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		double rhoL = UL(0) + UL(1);
 		double uL = UL(2) / rhoL;
 		double vL = UL(3) / rhoL;
-		double eL = UL(4) / rhoL - (uL * uL + vL * vL);
+		double eL = UL(4) / rhoL - 0.5 * (uL * uL + vL * vL);
 		double pL = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoL, eL, zL);
 		double cL = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoL, pL, zL);
 		
@@ -45,7 +45,7 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		double rhoR = UR(0) + UR(1);
 		double uR = UR(2) / rhoR;
 		double vR = UR(3) / rhoR;
-		double eR = UR(4) / rhoR - (uR * uR + vR * vR);
+		double eR = UR(4) / rhoR - 0.5 * (uR * uR + vR * vR);
 		double pR = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoR, eR, zR);
 		double cR = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoR, pR, zR);
 		

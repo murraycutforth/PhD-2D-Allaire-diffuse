@@ -227,11 +227,36 @@ void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params
 		}
 	}
 }
+
+void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& params, int n, double t)
+{
+	std::string filename = params.outputname + "-lineoutx-" + std::to_string(n) + ".dat";
+	std::ofstream outfile;
+	outfile.open(filename);
+	
+	int i = params.Ny / 2;
+	
+	for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+	{
+		double x = params.x0 + double(j - params.numGC)*params.dx;
+		double rho = grid[i][j](0) + grid[i][j](1);
+		double u = grid[i][j](2) / rho;
+		double v = grid[i][j](3) / rho;
+		double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
+		double z = grid[i][j](5);
+		double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+			
+		outfile << x << " " << rho << " " << u << " " << v << " " << e << " " << p << " " << z << std::endl;
+	}
+	
+	outfile.close();
+}
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)
 {
 	if (n==0 || t==params.T)
 	{
 		vtk_output(grid, params, n, t);
+		gnuplot_lineout(grid, params, n, t);
 	}
 }

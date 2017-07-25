@@ -22,7 +22,7 @@ inline vectype flux_conserved_var (double gamma1, double gamma2, double pinf1, d
 	double rho = U(0) + U(1);
 	double u = U(2) / rho;
 	double v = U(3) / rho;
-	double e = U(4) / rho - (u * u + v * v);
+	double e = U(4) / rho - 0.5 * (u * u + v * v);
 	double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, U(5));
 	
 	flux(0) = U(0) * u;

@@ -7,9 +7,7 @@
 double allaire_diffuse :: compute_dt (const gridtype& grid, const sim_info& params, int n, double t)
 {
 	double maxu = 0.0, maxv = 0.0;
-	
-	// TODO: look into parallelising this loop with openMP
-	
+		
 	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
 	{
 		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
