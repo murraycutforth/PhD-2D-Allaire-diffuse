@@ -12,12 +12,16 @@
 #define ZUPDATE_H
 
 #include <algorithm>
+#include <cmath>
+#include <memory>
 
 class zupdate_base {
 	
 	public:
 	
 	virtual double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R) =0;
+	
+	virtual std::shared_ptr<zupdate_base> clone () =0;
 };
 
 
@@ -27,7 +31,14 @@ class zupdate_upwind : public zupdate_base {
 	
 	double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R)
 	{
-		return z - (dt / dx) * ((zR - z) * std::min(0.0, u_star_R) + (z - zL) * std::max(0.0, u_star_L));
+		double newz = z - (dt / dx) * ((zR - z) * std::min(0.0, u_star_R) + (z - zL) * std::max(0.0, u_star_L));
+				
+		return std::max(std::min(1.0, newz), 0.0);
+	}
+	
+	std::shared_ptr<zupdate_base> clone ()
+	{
+		return std::make_shared<zupdate_upwind>();
 	}
 };
 
@@ -38,7 +49,14 @@ class zupdate_secondorder : public zupdate_base {
 	
 	double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R)
 	{
-		return z - (dt / dx) * (u_star_L * z_star_L - u_star_R * z_star_R - z * (u_star_R - u_star_L));
+		double newz = z - (dt / dx) * (u_star_L * z_star_L - u_star_R * z_star_R - z * (u_star_R - u_star_L));
+		
+		return std::max(std::min(1.0, newz), 0.0);
+	}
+	
+	std::shared_ptr<zupdate_base> clone ()
+	{
+		return std::make_shared<zupdate_secondorder>();
 	}
 };
 

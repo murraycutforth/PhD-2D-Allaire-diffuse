@@ -21,7 +21,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	// EOS parameters, computational domain and boundary conditions
 	
-	if (SF.test_case == "ST1")
+	if (SF.test_case == "ST1_x" || SF.test_case == "ST1_y")
 	{
 		gamma1 = 1.4;
 		gamma2 = 2.4;
@@ -33,6 +33,57 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.dx = 1.0/params.Nx;
 		params.dy = 1.0/params.Ny;
 		params.T = 0.14;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "ST2_x" || SF.test_case == "ST2_y")
+	{
+		gamma1 = 4.4;
+		gamma2 = 1.4;
+		pinf1 = 600000000.0;
+		pinf2 = 0.0;
+
+		params.x0 = -2.0;
+		params.y0 = -2.0;
+		params.dx = 4.0/params.Nx;
+		params.dy = 4.0/params.Ny;
+		params.T = 0.0009;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "TTC5_x_pure" || SF.test_case == "TTC5_y_pure")
+	{
+		gamma1 = 1.4;
+		gamma2 = 1.4;
+		pinf1 = 0.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 1.0/params.Nx;
+		params.dy = 1.0/params.Ny;
+		params.T = 0.035;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "circular_explosion")
+	{
+		gamma1 = 1.4;
+		gamma2 = 1.4;
+		pinf1 = 0.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 2.0/params.Nx;
+		params.dy = 2.0/params.Ny;
+		params.T = 0.25;
 		params.BC_L = "transmissive";
 		params.BC_T = "transmissive";
 		params.BC_R = "transmissive";
@@ -87,7 +138,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	// Initial states
 	
-	if (SF.test_case == "ST1")
+	if (SF.test_case == "ST1_x" || SF.test_case == "ST1_y")
 	{
 		double rho1 = 1.0;
 		double p1 = 1.0;
@@ -103,15 +154,27 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
-				if (j < params.Nx / 2)
+				if (SF.test_case == "ST1_x")
 				{
-					// Fluid 1 here
-					z = 1.0;
+					if (j < params.Nx / 2)
+					{
+						z = 1.0;
+					}
+					else
+					{
+						z = 0.0;
+					}
 				}
 				else
 				{
-					// Fluid 2 here
-					z = 0.0;
+					if (i < params.Ny / 2)
+					{
+						z = 1.0;
+					}
+					else
+					{
+						z = 0.0;
+					}
 				}
 				
 				ICgrid[i][j](0) = z * rho1;
@@ -122,6 +185,178 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				ICgrid[i][j](5) = z;
 			}
 		}
+	}
+	else if (SF.test_case == "ST2_x" || SF.test_case == "ST2_y")
+	{
+		double rho1 = 1000.0;
+		double p1 = 1000000000.0;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 50.0;
+		double p2 = 100000.0;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u = 0.0;
+		double v = 0.0;
+		double z;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				double x = params.x0 + 0.5 * params.dx + j * params.dx;
+				double y = params.y0 + 0.5 * params.dy + i * params.dy;
+				
+				if (SF.test_case == "ST2_x")
+				{
+					if (x < 0.7)
+					{
+						// Fluid 1 here
+						z = 1.0;
+					}
+					else
+					{
+						// Fluid 2 here
+						z = 0.0;
+					}
+				}
+				else
+				{
+					if (y < 0.7)
+					{
+						// Fluid 1 here
+						z = 1.0;
+					}
+					else
+					{
+						// Fluid 2 here
+						z = 0.0;
+					}
+				}
+				
+				ICgrid[i][j](0) = z * rho1;
+				ICgrid[i][j](1) = (1.0 - z) * rho2;
+				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
+				ICgrid[i][j](5) = z;
+			}
+		}
+	}
+	else if (SF.test_case == "TTC5_x_pure" || SF.test_case == "TTC5_y_pure")
+	{
+		double rho1 = 5.99924;
+		double p1 = 460.894;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 5.99242;
+		double p2 = 46.0950;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u1 = 19.5975;
+		double u2 = -6.19633;
+		double v = 0.0;
+		double z = 1.0;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				if (SF.test_case == "TTC5_x_pure")
+				{
+					if (j < params.Nx / 2)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+				else
+				{
+					if (i < params.Ny / 2)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+			}
+		}
+	}
+	else if (SF.test_case == "circular_explosion")
+	{
+		double rho1 = 1.0;
+		double p1 = 1.0;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 0.125;
+		double p2 = 0.1;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u = 0.0;
+		double v = 0.0;
+		double z;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				// Set z as fraction of area inside circle of radius 0.4 at (1.0, 1.0)
+				
+				int numsamples = 10;
+				int totalnumsamples = numsamples*numsamples;
+				int numinside = 0;
+				double delx = params.dx/numsamples;
+				double dely = params.dy/numsamples;
+				
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
+				Eigen::Vector2d BL;
+				BL(0) = cc(0) - 0.5 * params.dx;
+				BL(1) = cc(1) - 0.5 * params.dy;
+				
+				for (int a=0; a<numsamples; a++)
+				{
+					for (int b=0; b<numsamples; b++)
+					{
+						Eigen::Vector2d samplepos;
+						samplepos(0) = BL(0) + (a + 0.5) * delx;
+						samplepos(1) = BL(1) + (b + 0.5) * dely;
+						
+						samplepos(0) -= 1.0;
+						samplepos(1) -= 1.0;
+						
+						if (samplepos.norm() <= 0.4) numinside++;
+					}
+				}
+
+				z = double(numinside)/totalnumsamples;
+				
+				ICgrid[i][j](0) = z * rho1;
+				ICgrid[i][j](1) = (1.0 - z) * rho2;
+				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
+				ICgrid[i][j](5) = z;
+			}
+		}		
 	}
 	else
 	{
@@ -238,7 +473,7 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 	
 	for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 	{
-		double x = params.x0 + double(j - params.numGC)*params.dx;
+		double x = params.x0 + double(j - params.numGC)*params.dx + 0.5*params.dx;
 		double rho = grid[i][j](0) + grid[i][j](1);
 		double u = grid[i][j](2) / rho;
 		double v = grid[i][j](3) / rho;
@@ -250,6 +485,27 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 	}
 	
 	outfile.close();
+	
+	filename = params.outputname + "-lineouty-" + std::to_string(n) + ".dat";
+	std::ofstream outfile2;
+	outfile2.open(filename);
+	
+	int j = params.Nx / 2;
+	
+	for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+	{
+		double y = params.y0 + double(i - params.numGC)*params.dy + 0.5*params.dy;
+		double rho = grid[i][j](0) + grid[i][j](1);
+		double u = grid[i][j](2) / rho;
+		double v = grid[i][j](3) / rho;
+		double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
+		double z = grid[i][j](5);
+		double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+			
+		outfile2 << y << " " << rho << " " << u << " " << v << " " << e << " " << p << " " << z << std::endl;
+	}
+	
+	outfile2.close();
 }
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)

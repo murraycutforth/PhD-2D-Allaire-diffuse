@@ -12,6 +12,7 @@
 
 #include "sim_info.hpp"
 #include "typedefs.hpp"
+#include <memory>
 
 class riemann_solver_base {
 	
@@ -36,6 +37,8 @@ class riemann_solver_base {
 	{}
 	
 	virtual vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr) =0;
+	
+	virtual std::shared_ptr<riemann_solver_base> clone () =0;
 	
 };	
 

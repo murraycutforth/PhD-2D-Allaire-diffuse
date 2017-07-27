@@ -1,8 +1,8 @@
-Nx 512
-Ny 512
+Nx 500
+Ny 500
 CFL 0.8
 splitting_scheme naive_splitting
-test_case ST1
+test_case circular_explosion
 output 1
 outputpath ./output/
 flux_solver Godunov

@@ -33,6 +33,11 @@ class flux_solver_godunov : public flux_solver_base {
 		z_star = ((1.0 + std::copysign(1.0, u_star)) / 2.0 ) * stencil[0](5)
 			 + ((1.0 - std::copysign(1.0, u_star)) / 2.0 ) * stencil[1](5);
 	}
+	
+	std::shared_ptr<flux_solver_base> clone ()
+	{
+		return std::make_shared<flux_solver_godunov>(RS_ptr->clone(), params, gamma1, gamma2, pinf1, pinf2);
+	}
 };
 
 #endif

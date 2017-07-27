@@ -23,9 +23,24 @@ class HLLC_riemann_solver : public riemann_solver_base {
 	
 	public:
 	
+	vectype U_starL;
+	vectype U_starR;
+	vectype HLLCflux;
+	
 	HLLC_riemann_solver (sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:
-		riemann_solver_base (params, gamma1, gamma2, pinf1, pinf2)
+		riemann_solver_base (params, gamma1, gamma2, pinf1, pinf2),
+		U_starL (6),
+		U_starR (6),
+		HLLCflux (6)
+	{}
+	
+	HLLC_riemann_solver (const HLLC_riemann_solver& other)
+	:
+		riemann_solver_base (other.params, other.gamma1, other.gamma2, other.pinf1, other.pinf2),
+		U_starL (6),
+		U_starR (6),
+		HLLCflux (6)
 	{}
 	
 	vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr)
@@ -67,7 +82,6 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		if (u_star_ptr) *u_star_ptr = u_star;
 		if (p_star_ptr) *p_star_ptr = p_star;
 		
-		vectype U_starL (6);
 		U_starL(0) = factorL * UL(0);
 		U_starL(1) = factorL * UL(1);
 		U_starL(2) = factorL * rhoL * u_star;
@@ -75,7 +89,6 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		U_starL(4) = factorL * (UL(4) + (u_star - uL) * (rhoL * u_star + (pL / (SL - uL))));
 		U_starL(5) = 0.0;
 		
-		vectype U_starR (6);
 		U_starR(0) = factorR * UR(0);
 		U_starR(1) = factorR * UR(1);
 		U_starR(2) = factorR * rhoR * u_star;
@@ -83,13 +96,19 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		U_starR(4) = factorR * (UR(4) + (u_star - uR) * (rhoR * u_star + (pR / (SR - uR))));
 		U_starR(5) = 0.0;
 		
-		vectype fluxL = flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UL);
-		vectype fluxR = flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UR);
-		
-		return ((1.0 + std::copysign(1.0, u_star)) / 2.0)
-			* (fluxL + std::min(0.0, SL) * (U_starL - UL))
-			+ ((1.0 - std::copysign(1.0, u_star)) / 2.0)
-			* (fluxR + std::max(0.0, SR) * (U_starR - UR));
+		HLLCflux = ((1.0 + std::copysign(1.0, u_star)) / 2.0)
+				* (flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UL) 
+					+ std::min(0.0, SL) * (U_starL - UL))
+				+ ((1.0 - std::copysign(1.0, u_star)) / 2.0)
+				* (flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UR) 
+					+ std::max(0.0, SR) * (U_starR - UR));
+		HLLCflux(5) = 0.0;
+		return HLLCflux;
+	}
+	
+	std::shared_ptr<riemann_solver_base> clone ()
+	{	
+		return std::make_shared<HLLC_riemann_solver>(*this);
 	}
 	
 };

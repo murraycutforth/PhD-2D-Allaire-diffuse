@@ -14,6 +14,7 @@
 #include "typedefs.hpp"
 #include "riemann_solver_base.hpp"
 #include <vector>
+#include <memory>
 
 class flux_solver_base {
 	
@@ -44,6 +45,8 @@ class flux_solver_base {
 	{}
 	
 	virtual void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double& u_star, double& z_star) =0;
+	
+	virtual std::shared_ptr<flux_solver_base> clone () =0;
 };
 
 #endif

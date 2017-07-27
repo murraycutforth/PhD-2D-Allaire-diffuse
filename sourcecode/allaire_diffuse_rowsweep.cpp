@@ -1,9 +1,11 @@
 #include "allaire_diffuse.hpp"
 #include "sim_info.hpp"
+#include "misc.hpp"
 #include <iostream>
 #include <cmath>
 #include <memory>
 #include <string>
+
 
 void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid, const sim_info& params, int i, double dt, double t)
 {
@@ -15,14 +17,14 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 		
 	
 	// Compute cell edge fluxes across each edge of this row
+	
+	std::vector<vectype> stencil (2*params.stclsize);
 		
 	for (int j=params.numGC; j < params.Nx + params.numGC + 1; j++)
 	{
-		std::vector<vectype> stencil;
-		
 		for (int l = j - params.stclsize; l <= j + params.stclsize - 1; l++)
 		{
-			stencil.push_back(grid[i][l]);
+			stencil[l - j + params.stclsize] = grid[i][l];
 		}
 
 		FS_ptr->flux_computation(stencil, fluxes[j], u_stars[j], z_stars[j]);
@@ -43,6 +45,8 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 	{
 		future_grid[i][j](5) = zupdate_ptr->zupdate(params.dx, dt, grid[i][j-1](5), grid[i][j](5), grid[i][j+1](5), 
 							    u_stars[j], u_stars[j+1], z_stars[j], z_stars[j+1]);
+							    
+		assert(is_physical_state(gamma1, gamma2, pinf1, pinf2, future_grid[i][j]));
 	}
 	
 }
