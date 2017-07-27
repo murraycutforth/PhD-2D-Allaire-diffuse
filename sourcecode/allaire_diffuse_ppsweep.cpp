@@ -74,12 +74,6 @@ void allaire_diffuse :: pre_sweep (gridtype& grid, const sim_info& params)
 }
 	
 void allaire_diffuse :: post_sweep (gridtype& grid, gridtype& future_grid, const sim_info& params)
-{
-	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
-	{
-		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
-		{
-			grid[i][j] = future_grid[i][j];
-		}
-	}
+{	
+	grid.swap(future_grid);
 }
