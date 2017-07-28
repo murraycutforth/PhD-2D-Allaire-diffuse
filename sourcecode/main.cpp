@@ -14,12 +14,12 @@
 #include <memory>
 #include <omp.h>
 
-int main()
+int main(int argc, char* argv[])
 {
 	std::cout << "[main] Beginning simulation.." << std::endl;
 	
 	settings_file SF;
-	SF.read_settings_file("./settingsfile.txt");
+	SF.read_settings_file(argv[1]);
 	std::shared_ptr<problem_base> problem = std::make_shared<allaire_diffuse>();
 	
 	simulation sim (SF, problem);
