@@ -1,9 +1,9 @@
-Nx 1000
-Ny 1000
+Nx 1302
+Ny 358
 CFL 0.8
 splitting_scheme naive_splitting
-test_case circular_explosion
-output 1
+test_case shocked_helium_bubble
+output_freq 200
 outputpath ./output/
 flux_solver Godunov
 riemann_solver HLLC

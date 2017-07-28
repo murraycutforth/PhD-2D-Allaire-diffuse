@@ -1,3 +1,5 @@
 objectfiles
 2D-Allaire-diffuse
 output
+gmon.out
+profilestats.txt
