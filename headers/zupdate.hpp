@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <iostream>
 
 class zupdate_base {
 	
@@ -49,8 +50,8 @@ class zupdate_secondorder : public zupdate_base {
 	
 	double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R)
 	{
-		double newz = z - (dt / dx) * (u_star_L * z_star_L - u_star_R * z_star_R - z * (u_star_R - u_star_L));
-		
+		double newz = z - (dt / dx) * (u_star_R * z_star_R - u_star_L * z_star_L - z * (u_star_R - u_star_L));
+				
 		return std::max(std::min(1.0, newz), 0.0);
 	}
 	

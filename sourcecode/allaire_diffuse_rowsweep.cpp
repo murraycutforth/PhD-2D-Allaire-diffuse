@@ -27,7 +27,7 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 			stencil[l - j + params.stclsize] = grid[i][l];
 		}
 
-		FS_ptr->flux_computation(stencil, fluxes[j], u_stars[j], z_stars[j]);
+		FS_ptr->flux_computation(stencil, fluxes[j], dt, params.dx, u_stars[j], z_stars[j]);
 	}
 		
 	

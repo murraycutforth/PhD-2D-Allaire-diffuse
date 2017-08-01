@@ -44,7 +44,7 @@ class flux_solver_base {
 		pinf2 (pinf2)
 	{}
 	
-	virtual void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double& u_star, double& z_star) =0;
+	virtual void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star) =0;
 	
 	virtual std::shared_ptr<flux_solver_base> clone () =0;
 };

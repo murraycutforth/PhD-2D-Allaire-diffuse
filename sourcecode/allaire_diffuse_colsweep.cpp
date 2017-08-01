@@ -39,7 +39,7 @@ void allaire_diffuse :: update_col (const gridtype& grid, gridtype& future_grid,
 			stencil[l - i + params.stclsize] = transformed_row[l];
 		}
 		
-		FS_ptr->flux_computation(stencil, fluxes[i], u_stars[i], z_stars[i]);
+		FS_ptr->flux_computation(stencil, fluxes[i], dt, params.dx, u_stars[i], z_stars[i]);
 	}
 	
 	

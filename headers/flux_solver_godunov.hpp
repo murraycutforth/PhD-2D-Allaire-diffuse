@@ -24,7 +24,7 @@ class flux_solver_godunov : public flux_solver_base {
 		flux_solver_base(RS_ptr, params, gamma1, gamma2, pinf1, pinf2)
 	{}
 	
-	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double& u_star, double& z_star)
+	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star)
 	{
 		assert(stencil.size() == 2);
 				

@@ -1,6 +1,7 @@
 #include "allaire_diffuse.hpp"
 #include "stiffened_gas_eos.hpp"
 #include "flux_solver_godunov.hpp"
+#include "flux_solver_MUSCLhancock.hpp"
 #include "mixturemodel.hpp"
 #include "riemann_solver_HLLC.hpp"
 #include <iostream>
@@ -68,6 +69,23 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.dx = 1.0/params.Nx;
 		params.dy = 1.0/params.Ny;
 		params.T = 0.035;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "TTC1_x_pure" || SF.test_case == "TTC1_y_pure")
+	{
+		gamma1 = 1.4;
+		gamma2 = 1.4;
+		pinf1 = 0.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 1.0/params.Nx;
+		params.dy = 1.0/params.Ny;
+		params.T = 0.25;
 		params.BC_L = "transmissive";
 		params.BC_T = "transmissive";
 		params.BC_R = "transmissive";
@@ -143,8 +161,22 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "reflective";
 	}
-	else if (SF.test_case == "RMI_tin")
+	else if (SF.test_case == "tin_air_implosion")
 	{
+		gamma1 = 3.27;
+		gamma2 = 1.4;
+		pinf1 = 149500.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = -25.0;
+		params.dx = 25.0/params.Nx;
+		params.dy = 50.0/params.Ny;
+		params.T = 0.08;
+		params.BC_L = "reflective";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
 	}
 	else
 	{
@@ -158,6 +190,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	{
 		params.numGC = 1;
 		params.stclsize = 1;
+	}
+	else if (SF.flux_solver == "MUSCL1" || SF.flux_solver == "MUSCL2")
+	{
+		params.numGC = 2;
+		params.stclsize = 2;
 	}
 	else
 	{
@@ -183,6 +220,16 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	{
 		FS_ptr = std::make_shared<flux_solver_godunov>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
 		zupdate_ptr = std::make_shared<zupdate_upwind>();
+	}
+	else if (SF.flux_solver == "MUSCL1")
+	{
+		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK_1>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
+		zupdate_ptr = std::make_shared<zupdate_secondorder>();
+	}
+	else if (SF.flux_solver == "MUSCL2")
+	{
+		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK_2>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
+		zupdate_ptr = std::make_shared<zupdate_secondorder>();
 	}
 	else
 	{
@@ -211,9 +258,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
 				if (SF.test_case == "ST1_x")
 				{
-					if (j < params.Nx / 2)
+					if (cc(0) < 0.5)
 					{
 						z = 1.0;
 					}
@@ -224,7 +273,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				}
 				else
 				{
-					if (i < params.Ny / 2)
+					if (cc(1) < 0.5)
 					{
 						z = 1.0;
 					}
@@ -259,12 +308,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
-				double x = params.x0 + 0.5 * params.dx + j * params.dx;
-				double y = params.y0 + 0.5 * params.dy + i * params.dy;
+				
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
 				
 				if (SF.test_case == "ST2_x")
 				{
-					if (x < 0.7)
+					if (cc(0) < 0.7)
 					{
 						// Fluid 1 here
 						z = 1.0;
@@ -277,7 +326,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				}
 				else
 				{
-					if (y < 0.7)
+					if (cc(1) < 0.7)
 					{
 						// Fluid 1 here
 						z = 1.0;
@@ -315,9 +364,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
 				if (SF.test_case == "TTC5_x_pure")
 				{
-					if (j < params.Nx / 2)
+					if (cc(0) < 0.5)
 					{
 						ICgrid[i][j](0) = z * rho1;
 						ICgrid[i][j](1) = 0.0;
@@ -337,8 +388,72 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 					}
 				}
 				else
+				{					
+					if (cc(1) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+			}
+		}
+	}
+	else if (SF.test_case == "TTC1_x_pure" || SF.test_case == "TTC1_y_pure")
+	{
+		double rho1 = 1.0;
+		double p1 = 1.0;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 0.125;
+		double p2 = 0.1;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u1 = 0.0;
+		double u2 = 0.0;
+		double v = 0.0;
+		double z = 1.0;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				if (SF.test_case == "TTC1_x_pure")
 				{
-					if (i < params.Ny / 2)
+					if (cc(0) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+				else
+				{					
+					if (cc(1) < 0.5)
 					{
 						ICgrid[i][j](0) = z * rho1;
 						ICgrid[i][j](1) = 0.0;
@@ -435,11 +550,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
-				double x = params.x0 + 0.5 * params.dx + j * params.dx;
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
 				
 				double rho1, u, e1;
 				
-				if (x < 225.0)
+				if (cc(0) < 225.0)
 				{
 					rho1 = rho_preshock;
 					u = u_preshock;
@@ -460,7 +575,6 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				double delx = params.dx/numsamples;
 				double dely = params.dy/numsamples;
 				
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
 				Eigen::Vector2d BL;
 				BL(0) = cc(0) - 0.5 * params.dx;
 				BL(1) = cc(1) - 0.5 * params.dy;
@@ -511,11 +625,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
-				double x = params.x0 + 0.5 * params.dx + j * params.dx;
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
 				
 				double rho1, u, e1;
 				
-				if (x > 0.05)
+				if (cc(0) > 0.05)
 				{
 					rho1 = rho_preshock;
 					u = u_preshock;
@@ -537,7 +651,6 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				double delx = params.dx/numsamples;
 				double dely = params.dy/numsamples;
 				
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
 				Eigen::Vector2d BL;
 				BL(0) = cc(0) - 0.5 * params.dx;
 				BL(1) = cc(1) - 0.5 * params.dy;
@@ -589,11 +702,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		{
 			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
 			{
-				double x = params.x0 + 0.5 * params.dx + j * params.dx;
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
 				
 				double rho1, u, e1;
 				
-				if (x < 3.2)
+				if (cc(0) < 3.2)
 				{
 					rho1 = rho_preshock;
 					u = u_preshock;
@@ -618,7 +731,6 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				double pi = atan(1.0) * 4.0;
 				double dely = params.dy/numsamples;
 				
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
 				Eigen::Vector2d BL;
 				BL(0) = cc(0) - 0.5 * params.dx;
 				BL(1) = cc(1) - 0.5 * params.dy;
@@ -638,6 +750,95 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 						{
 							numinside++;
 						}
+					}
+				}
+
+				z = 1.0 - double(numinside)/totalnumsamples;
+				
+				ICgrid[i][j](0) = z * rho1;
+				ICgrid[i][j](1) = (1.0 - z) * rho2;
+				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
+				ICgrid[i][j](5) = z;
+			}
+		}		
+	}
+	else if (SF.test_case == "tin_air_implosion")
+	{
+		double rho_preshock = 7.28;
+		double p_preshock = 1.0;
+		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
+		double rho_postshock = 11.84;
+		double p_postshock = 1000000.0;
+		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
+		double rho2 = 0.001;
+		double p2 = 1.0;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double v = 0.0;
+		double z;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				// Set tin state as fraction of area inside circle of radius 24
+				
+				int numsamples = 10;
+				int totalnumsamples = numsamples*numsamples;
+				int numinside = 0;
+				double delx = params.dx/numsamples;
+				double dely = params.dy/numsamples;
+				
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
+				Eigen::Vector2d BL;
+				BL(0) = cc(0) - 0.5 * params.dx;
+				BL(1) = cc(1) - 0.5 * params.dy;
+				
+				for (int a=0; a<numsamples; a++)
+				{
+					for (int b=0; b<numsamples; b++)
+					{
+						Eigen::Vector2d samplepos;
+						samplepos(0) = BL(0) + (a + 0.5) * delx;
+						samplepos(1) = BL(1) + (b + 0.5) * dely;
+						
+						if (samplepos.norm() <= 24.0) numinside++;
+					}
+				}
+				
+				double insideratio = double(numinside) / totalnumsamples;
+				
+				double rho1, u = 0.0, e1;
+				rho1 = insideratio * rho_preshock + (1.0 - insideratio) * rho_postshock;
+				e1 = insideratio * e_preshock + (1.0 - insideratio) * e_postshock;
+				
+				
+				// Set z as fraction of area inside circle of radius 20 at (0, 0)
+				
+				numsamples = 10;
+				totalnumsamples = numsamples*numsamples;
+				numinside = 0;
+				delx = params.dx/numsamples;
+				dely = params.dy/numsamples;
+				
+				cc = params.cellcentre_coord(i, j);
+				BL(0) = cc(0) - 0.5 * params.dx;
+				BL(1) = cc(1) - 0.5 * params.dy;
+				
+				for (int a=0; a<numsamples; a++)
+				{
+					for (int b=0; b<numsamples; b++)
+					{
+						Eigen::Vector2d samplepos;
+						samplepos(0) = BL(0) + (a + 0.5) * delx;
+						samplepos(1) = BL(1) + (b + 0.5) * dely;
+						
+						double theta = atan2(samplepos(1), samplepos(0));
+						theta -= atan(1) * 2;
+						double r_interface = 20.0 + 0.4 * cos(31 * theta) + 0.4 * cos(25 * theta) + 0.4 * cos(39 * theta);
+						
+						if (samplepos.norm() <= r_interface) numinside++;
 					}
 				}
 
@@ -755,6 +956,8 @@ void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params
 			outfile5 << grid[i][j](5) << "\n";
 		}
 	}
+	
+	std::cout << "[allaire_diffuse] Output to vtk complete" << std::endl;
 }
 
 void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& params, int n, double t)
@@ -801,7 +1004,7 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 	
 	outfile2.close();
 	
-	std::cout << "[allaire_diffuse] Output to vtk complete" << std::endl;
+	std::cout << "[allaire_diffuse] Output to gnuplot complete" << std::endl;
 }
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)
@@ -809,9 +1012,9 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 	if (n==0 || t==params.T)
 	{
 		vtk_output(grid, params, n, t);
+		gnuplot_lineout(grid, params, n, t);
 	}
-	
-	if (params.output_freq != 0.0)
+	else if (params.output_freq != 0.0)
 	{
 		if (n % params.output_freq == 0)
 		{
