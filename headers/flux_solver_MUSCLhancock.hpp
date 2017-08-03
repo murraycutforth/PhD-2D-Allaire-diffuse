@@ -87,133 +87,7 @@ vectype minmod_limited_slope (const vectype& diff_L, const vectype& diff_R)
 	return slope;
 }
 
-class flux_solver_MUSCLHANCOCK_1 : public flux_solver_base {
-	
-	public:
-	
-	vectype diff_L;
-	vectype diff_C;
-	vectype diff_R;
-	vectype UL_L;
-	vectype UL_R;
-	vectype UR_L;
-	vectype UR_R;
-	vectype UL;
-	vectype UR;
-	
-	flux_solver_MUSCLHANCOCK_1 (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
-	:
-		flux_solver_base(RS_ptr, params, gamma1, gamma2, pinf1, pinf2),
-		diff_L	(6),
-		diff_C	(6),
-		diff_R	(6),
-		UL_L	(6),
-		UL_R	(6),
-		UR_L	(6),
-		UR_R	(6),
-		UL	(6),
-		UR	(6)
-	{}
-		
-	
-	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star)
-	{
-		assert(stencil.size() == 4);
-				
-		diff_L = stencil[1] - stencil[0];
-		diff_C = stencil[2] - stencil[1];
-		diff_R = stencil[3] - stencil[2];
-		
-		UL_L = stencil[1] - 0.5 * minmod_limited_slope(diff_L, diff_C);
-		UL_R = stencil[1] + 0.5 * minmod_limited_slope(diff_L, diff_C);
-		UR_L = stencil[2] - 0.5 * minmod_limited_slope(diff_C, diff_R);
-		UR_R = stencil[2] + 0.5 * minmod_limited_slope(diff_C, diff_R);
-		
-		
-		// Use zero slope if reconstructed pressure or density goes negative
-		
-		if ( is_physical_state(gamma1, gamma2, pinf1, pinf2, UL_L)
-			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UL_R)
-			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UR_L)
-			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UR_R)
-		   )
-		{}
-		else
-		{
-			UL_L = stencil[1];
-			UL_R = stencil[1];
-			UR_L = stencil[2];
-			UR_R = stencil[2];
-			
-			std::cout << "[MUSCLHANCOCK1] Unphysical state created by slope extrapolation." << std::endl;
-		}
-		
-		
-		// Advance conserved variables by half time step
-		
-		UL = UL_R + 0.5 * (dt / dx) * (flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UL_L) - flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UL_R));
-		UR = UR_L + 0.5 * (dt / dx) * (flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UR_L) - flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UR_R));
-		
-		
-		// Advance volume fractions by half time step
-		
-		double uL_L = UL_L(2) / (UL_L(0) + UL_L(1));
-		double uL_R = UL_R(2) / (UL_R(0) + UL_R(1));
-		double uR_L = UR_L(2) / (UR_L(0) + UR_L(1));
-		double uR_R = UR_R(2) / (UR_R(0) + UR_R(1));
-		UL(5) = UL_R(5) - 0.5 * (dt / dx) * (uL_R * UL_R(5) - uL_L * UL_L(5) - UL_R(5) * (uL_R - uL_L));
-		UR(5) = UR_L(5) - 0.5 * (dt / dx) * (uR_R * UR_R(5) - uR_L * UR_L(5) - UR_R(5) * (uR_R - uR_L));
-		
-		
-		// Use zero slope if reconstructed pressure or density goes negative
-		
-		if ( is_physical_state(gamma1, gamma2, pinf1, pinf2, UL)
-			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UR)
-		   )
-		{}
-		else
-		{
-			
-			
-			double rhoL = UL(0) + UL(1);
-			double uL = UL(2) / rhoL;
-			double vL = UL(3) / rhoL;
-			double eL = UL(4) / rhoL - 0.5 * (uL * uL + vL * vL);
-			double zL = UL(5);
-			double rhoR = UR(0) + UR(1);
-			double uR = UR(2) / rhoR;
-			double vR = UR(3) / rhoR;
-			double eR = UR(4) / rhoR - 0.5 * (uR * uR + vR * vR);
-			double zR = UR(5);
-			
-			if (rhoL < 0 || rhoR < 0 || UL(0) < 0 || UL(1) < 0 || UR(0) < 0 || UR(1) < 0) std::cout << "bad density" << std::endl;
-			if (zL < 0 || zL > 1 || zR < 0 || zL > 1) std::cout << "bad volume fraction" << std::endl;
-			if (eL < 0 || eR < 0) std::cout << "bad internal energy" << std::endl;
-			
-			std::cout << "[MUSCLHANCOCK1] Unphysical state created by time evolution." << std::endl;
-			UL = stencil[1];
-			UR = stencil[2];
-		}
-		
-		flux = RS_ptr->solve_RP(UL, UR, &u_star);
-		
-		if (u_star > 0.0)
-		{
-			z_star = UL(5);
-		}
-		else
-		{
-			z_star = UR(5);
-		}
-	}
-	
-	std::shared_ptr<flux_solver_base> clone ()
-	{
-		return std::make_shared<flux_solver_MUSCLHANCOCK_1>(RS_ptr->clone(), params, gamma1, gamma2, pinf1, pinf2);
-	}
-};
-
-class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
+class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 	
 	public:
 	
@@ -230,7 +104,7 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 	PVRS_riemann_solver pvrs;
 	std::function<vectype(const vectype&, const vectype&)> slopelimiter;
 	
-	flux_solver_MUSCLHANCOCK_2 (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
+	flux_solver_MUSCLHANCOCK (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:
 		flux_solver_base(RS_ptr, params, gamma1, gamma2, pinf1, pinf2),
 		diff_L	(6),
@@ -320,8 +194,6 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 		{}
 		else
 		{
-			
-			
 			double rhoL = UL(0) + UL(1);
 			double uL = UL(2) / rhoL;
 			double vL = UL(3) / rhoL;
@@ -337,7 +209,7 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 			if (zL < 0 || zL > 1 || zR < 0 || zL > 1) std::cout << "bad volume fraction" << std::endl;
 			if (eL < 0 || eR < 0) std::cout << "bad internal energy" << std::endl;
 			
-			std::cout << "[MUSCLHANCOCK2] Unphysical state created by time evolution." << std::endl;
+			std::cout << "[MUSCLHANCOCK] Unphysical state created by time evolution." << std::endl;
 			UL = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, stencil[1]);
 			UR = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, stencil[2]);
 		}
@@ -348,7 +220,7 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 	
 	std::shared_ptr<flux_solver_base> clone ()
 	{
-		return std::make_shared<flux_solver_MUSCLHANCOCK_2>(RS_ptr->clone(), params, gamma1, gamma2, pinf1, pinf2);
+		return std::make_shared<flux_solver_MUSCLHANCOCK>(RS_ptr->clone(), params, gamma1, gamma2, pinf1, pinf2);
 	}
 };
 

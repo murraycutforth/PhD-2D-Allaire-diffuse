@@ -278,7 +278,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.numGC = 1;
 		params.stclsize = 1;
 	}
-	else if (SF.flux_solver == "MUSCL1" || SF.flux_solver == "MUSCL2")
+	else if (SF.flux_solver == "MUSCL")
 	{
 		params.numGC = 2;
 		params.stclsize = 2;
@@ -308,14 +308,9 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		FS_ptr = std::make_shared<flux_solver_godunov>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
 		zupdate_ptr = std::make_shared<zupdate_upwind>();
 	}
-	else if (SF.flux_solver == "MUSCL1")
+	else if (SF.flux_solver == "MUSCL")
 	{
-		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK_1>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
-		zupdate_ptr = std::make_shared<zupdate_secondorder>();
-	}
-	else if (SF.flux_solver == "MUSCL2")
-	{
-		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK_2>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
+		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
 		zupdate_ptr = std::make_shared<zupdate_secondorder>();
 	}
 	else
