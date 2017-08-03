@@ -2,8 +2,8 @@ Nx 300
 Ny 300
 CFL 0.8
 splitting_scheme naive_splitting
-test_case TTC5_y_pure
+test_case ST2_y
 output_freq 10000
 outputpath ./test/testoutput/
-flux_solver MUSCL2
+flux_solver Godunov
 riemann_solver HLLC

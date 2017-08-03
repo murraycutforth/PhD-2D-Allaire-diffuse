@@ -67,18 +67,17 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		double SR, SL;
 		
 		// This formula from Garrick, Owkes, Regele (JCP 2017) exhibits some oscillation on TTC5 using Godunov's method
-		
-		
+		/*
 		double u_avg = 0.5 * (uL + uR);
 		double c_avg = 0.5 * (cL + cR);
 		SL = std::min(u_avg - c_avg, uL - cL);
 		SR = std::max(u_avg + c_avg, uR + cR);
+		*/
 		
 		
 		// Instead estimate the star-state pressure using the primitive variable linearised solver
 		// and if there is a shock compute speed using exact relations
 		
-		/*
 		double rho_avg = 0.5 * (rhoL + rhoR);
 		double c_avg = 0.5 * (cL + cR);
 		double p_pvrs = std::max(0.0, 0.5 * (pL + pR) + 0.5 * (uL - uR) * rho_avg * c_avg);
@@ -99,7 +98,7 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		{
 			SR = uR + cR;
 		}
-		*/
+		
 
 		
 		double u_star = (pR - pL + rhoL * uL * (SL - uL) - rhoR * uR * (SR - uR)) / (rhoL * (SL - uL) - rhoR * (SR - uR));
