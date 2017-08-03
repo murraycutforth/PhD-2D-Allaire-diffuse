@@ -57,7 +57,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "TTC5_x_pure" || SF.test_case == "TTC5_y_pure")
+	else if (SF.test_case == "TTC4_x_pure" || SF.test_case == "TTC4_y_pure")
 	{
 		gamma1 = 1.4;
 		gamma2 = 1.4;
@@ -86,6 +86,57 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.dx = 1.0/params.Nx;
 		params.dy = 1.0/params.Ny;
 		params.T = 0.25;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "TTC2_x_pure" || SF.test_case == "TTC2_y_pure")
+	{
+		gamma1 = 1.4;
+		gamma2 = 1.4;
+		pinf1 = 0.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 1.0/params.Nx;
+		params.dy = 1.0/params.Ny;
+		params.T = 0.15;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "TTC3_x_pure" || SF.test_case == "TTC3_y_pure")
+	{
+		gamma1 = 1.4;
+		gamma2 = 1.4;
+		pinf1 = 0.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 1.0/params.Nx;
+		params.dy = 1.0/params.Ny;
+		params.T = 0.012;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "TTC5_x_pure" || SF.test_case == "TTC5_y_pure")
+	{
+		gamma1 = 1.4;
+		gamma2 = 1.4;
+		pinf1 = 0.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 1.0/params.Nx;
+		params.dy = 1.0/params.Ny;
+		params.T = 0.035;
 		params.BC_L = "transmissive";
 		params.BC_T = "transmissive";
 		params.BC_R = "transmissive";
@@ -393,8 +444,8 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 					{
 						ICgrid[i][j](0) = z * rho1;
 						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](2) = v * rho1;
+						ICgrid[i][j](3) = u1 * rho1;
 						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
 						ICgrid[i][j](5) = z;
 					}
@@ -402,8 +453,8 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 					{
 						ICgrid[i][j](0) = z * rho2;
 						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](2) = v * rho2;
+						ICgrid[i][j](3) = u2 * rho2;
 						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
 						ICgrid[i][j](5) = z;
 					}
@@ -468,6 +519,198 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 						ICgrid[i][j](1) = 0.0;
 						ICgrid[i][j](2) = u2 * rho2;
 						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+			}
+		}
+	}
+	else if (SF.test_case == "TTC2_x_pure" || SF.test_case == "TTC2_y_pure")
+	{
+		double rho1 = 1.0;
+		double p1 = 0.4;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 1.0;
+		double p2 = 0.4;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u1 = -2.0;
+		double u2 = 2.0;
+		double v = 0.0;
+		double z = 1.0;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				if (SF.test_case == "TTC2_x_pure")
+				{
+					if (cc(0) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+				else
+				{					
+					if (cc(1) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = v * rho1;
+						ICgrid[i][j](3) = u1 * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = v * rho2;
+						ICgrid[i][j](3) = u2 * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+			}
+		}
+	}
+	else if (SF.test_case == "TTC3_x_pure" || SF.test_case == "TTC3_y_pure")
+	{
+		double rho1 = 1.0;
+		double p1 = 1000.0;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 1.0;
+		double p2 = 0.01;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u1 = 0.0;
+		double u2 = 0.0;
+		double v = 0.0;
+		double z = 1.0;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				if (SF.test_case == "TTC3_x_pure")
+				{
+					if (cc(0) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+				else
+				{					
+					if (cc(1) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = v * rho1;
+						ICgrid[i][j](3) = u1 * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = v * rho2;
+						ICgrid[i][j](3) = u2 * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+			}
+		}
+	}
+	else if (SF.test_case == "TTC4_x_pure" || SF.test_case == "TTC4_y_pure")
+	{
+		double rho1 = 1.0;
+		double p1 = 0.1;
+		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
+		double rho2 = 1.0;
+		double p2 = 100.0;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double u1 = 0.0;
+		double u2 = 0.0;
+		double v = 0.0;
+		double z = 1.0;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				if (SF.test_case == "TTC4_x_pure")
+				{
+					if (cc(0) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u1 * rho1;
+						ICgrid[i][j](3) = v * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = u2 * rho2;
+						ICgrid[i][j](3) = v * rho2;
+						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+				}
+				else
+				{					
+					if (cc(1) < 0.5)
+					{
+						ICgrid[i][j](0) = z * rho1;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = v * rho1;
+						ICgrid[i][j](3) = u1 * rho1;
+						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
+						ICgrid[i][j](5) = z;
+					}
+					else
+					{
+						ICgrid[i][j](0) = z * rho2;
+						ICgrid[i][j](1) = 0.0;
+						ICgrid[i][j](2) = v * rho2;
+						ICgrid[i][j](3) = u2 * rho2;
 						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
 						ICgrid[i][j](5) = z;
 					}

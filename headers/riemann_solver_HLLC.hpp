@@ -66,30 +66,26 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		
 		double SR, SL;
 		
-		// This formula from Garrick, Owkes, Regele (JCP 2017) exhibits some oscillation on TTC5
+		// This formula from Garrick, Owkes, Regele (JCP 2017) exhibits some oscillation on TTC5 using Godunov's method
 		
-		/*
+		
 		double u_avg = 0.5 * (uL + uR);
 		double c_avg = 0.5 * (cL + cR);
 		SL = std::min(u_avg - c_avg, uL - cL);
 		SR = std::max(u_avg + c_avg, uR + cR);
-		*/
+		
 		
 		// Instead estimate the star-state pressure using the primitive variable linearised solver
-		// and if there is a shock compute the wave speed based on the approximate star state
-		// pressure and averaged equation of state parameters:
+		// and if there is a shock compute speed using exact relations
 		
+		/*
 		double rho_avg = 0.5 * (rhoL + rhoR);
 		double c_avg = 0.5 * (cL + cR);
 		double p_pvrs = std::max(0.0, 0.5 * (pL + pR) + 0.5 * (uL - uR) * rho_avg * c_avg);
-		double gammaR = zR * gamma1 + (1.0 - zR) * gamma2;
-		double pinfR = zR * pinf1 + (1.0 - zR) * pinf2;
-		double gammaL = zL * gamma1 + (1.0 - zL) * gamma2;
-		double pinfL = zL * pinf1 + (1.0 - zL) * pinf2;
 			
 		if (p_pvrs > pL)
 		{
-			SL = uL - eos::shockspeed_increase(gammaL, pinfL, rhoL, pL, p_pvrs);
+			SL = uL - allairemodel::shock_speed_jump(gamma1, gamma2, pinf1, pinf2, pL, rhoL, p_pvrs, zL);
 		}
 		else
 		{
@@ -97,12 +93,14 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		}
 		if (p_pvrs > pR)
 		{
-			SR = uR + eos::shockspeed_increase(gammaR, pinfR, rhoR, pR, p_pvrs);
+			SR = uR + allairemodel::shock_speed_jump(gamma1, gamma2, pinf1, pinf2, pR, rhoR, p_pvrs, zR);
 		}
 		else
 		{
 			SR = uR + cR;
 		}
+		*/
+
 		
 		double u_star = (pR - pL + rhoL * uL * (SL - uL) - rhoR * uR * (SR - uR)) / (rhoL * (SL - uL) - rhoR * (SR - uR));
 		double p_star = pL + rhoL * (SL - uL) * (u_star - uL);

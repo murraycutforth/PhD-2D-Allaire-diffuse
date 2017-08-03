@@ -39,6 +39,23 @@ inline vectype flux_conserved_var (double gamma1, double gamma2, double pinf1, d
 	return flux;
 }
 
+inline vectype flux_primitive_var (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& W)
+{
+	vectype flux (6);
+	double rho = W(0) + W(1);
+	double e = allairemodel::mixture_specific_ie(gamma1, gamma2, pinf1, pinf2, rho, W(4), W(5));
+	double E = rho * e + 0.5 * rho * (W(2) * W(2) + W(3) * W(3));
+	
+	flux(0) = W(0) * W(2);
+	flux(1) = W(1) * W(2);
+	flux(2) = rho * W(2) * W(2) + W(4);
+	flux(3) = rho * W(3) * W(2);
+	flux(4) = (E + W(4)) * W(2);
+	flux(5) = 0.0;
+	
+	return flux;
+}
+
 inline vectype conserved_to_primitives (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& U)
 {
 	vectype prims (6);

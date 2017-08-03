@@ -3,3 +3,4 @@ objectfiles
 output
 gmon.out
 profilestats.txt
+test/

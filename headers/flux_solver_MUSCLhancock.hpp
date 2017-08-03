@@ -13,9 +13,9 @@
  * 				  for volume fractions
  * 
  * 			2)	- Primitive variable reconstruction
- * 				- Monotone centred slope limiting
+ * 				- Minmod slope limiting
  * 				- Jacobian-based half step evolution 
- * 
+ *  
  * 	AUTHOR:		Murray Cutforth
  * 	DATE:		25/07/2017
  */
@@ -25,9 +25,11 @@
 #define MUSCLHANCOCK_ALLAIRE_H
 
 #include "flux_solver_base.hpp"
+#include "riemann_solver_PVRS.hpp"
 #include "misc.hpp"
 #include <cassert>
 #include <algorithm>
+#include <functional>
 #include <cmath>
 
 vectype unlimited_central_diff (const vectype& diff_L, const vectype& diff_R)
@@ -225,6 +227,8 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 	Matrix6d A;
 	vectype UL;
 	vectype UR;
+	PVRS_riemann_solver pvrs;
+	std::function<vectype(const vectype&, const vectype&)> slopelimiter;
 	
 	flux_solver_MUSCLHANCOCK_2 (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:
@@ -236,7 +240,9 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 		del_R	(6),
 		A	(),
 		UL	(6),
-		UR	(6)
+		UR	(6),
+		pvrs	(params, gamma1, gamma2, pinf1, pinf2),
+		slopelimiter (minmod_limited_slope)
 	{}
 		
 	
@@ -246,14 +252,47 @@ class flux_solver_MUSCLHANCOCK_2 : public flux_solver_base {
 		prim_L_n = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[1]);
 		prim_R_n = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[2]);
 		
-		// Compute limited slopes of primitive variables
+		// Compute limited slopes of primitive variables using slope limiter
+		
+		/*
 				
 		diff_L = prim_L_n - conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[0]);
 		diff_C = prim_R_n - prim_L_n;
 		diff_R = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[3]) - prim_R_n;
 		
-		del_L = minmod_limited_slope(diff_L, diff_C);
-		del_R = minmod_limited_slope(diff_C, diff_R);
+		del_L = slopelimiter(diff_L, diff_C);
+		del_R = slopelimiter(diff_C, diff_R);
+		
+		*/
+		
+		
+		// OR compute slopes using characteristic limiting
+		
+		
+		
+		std::vector<vectype> jumpsL (3, vectype(6));
+		std::vector<vectype> jumpsR (3, vectype(6));
+		
+		pvrs.compute_primitive_jumps(stencil[0], stencil[1], jumpsL);
+		pvrs.compute_primitive_jumps(stencil[1], stencil[2], jumpsR);
+		del_L = Eigen::VectorXd::Zero(6);
+		
+		for (int k=0; k<3; k++)
+		{
+			del_L += slopelimiter(jumpsL[k], jumpsR[k]);
+		}
+		
+		pvrs.compute_primitive_jumps(stencil[1], stencil[2], jumpsL);
+		pvrs.compute_primitive_jumps(stencil[2], stencil[3], jumpsR);
+		del_R = Eigen::VectorXd::Zero(6);
+		
+		for (int k=0; k<3; k++)
+		{
+			del_R += slopelimiter(jumpsL[k], jumpsR[k]);
+		}
+		
+		
+		
 		
 		
 		// Compute left/right state to be supplied to Riemann solver
