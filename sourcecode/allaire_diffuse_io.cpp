@@ -159,6 +159,42 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
+	else if (SF.test_case == "underwater_shocked_bubble")
+	{
+		// See "Practical techniques in ghost fluid method..", Xu, Communications in computational physics, 2016
+		
+		gamma1 = 7.15;
+		gamma2 = 1.4;
+		pinf1 = 3309.0;
+		pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 12.0/params.Nx;
+		params.dy = 12.0/params.Ny;
+		params.T = 0.05;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (SF.test_case == "underwater_explosion")
+	{
+		gamma1 = 1.4;
+		gamma2 = 7.15;
+		pinf1 = 0.0;
+		pinf2 = 3.309e8;
+		
+		params.x0 = -5.0;
+		params.y0 = -5.0;
+		params.dx = 10.0/params.Nx;
+		params.dy = 10.0/params.Ny;
+		params.T = 0.003;
+		params.BC_L = "transmissive";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
 	else if (SF.test_case == "shocked_helium_bubble")
 	{
 		gamma1 = 1.4;
@@ -834,6 +870,159 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 						samplepos(1) -= 44.5;
 						
 						if (samplepos.norm() <= 25.0) numinside++;
+					}
+				}
+
+				z = 1.0 - double(numinside)/totalnumsamples;
+				
+				ICgrid[i][j](0) = z * rho1;
+				ICgrid[i][j](1) = (1.0 - z) * rho2;
+				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
+				ICgrid[i][j](5) = z;
+			}
+		}		
+	}
+	else if (SF.test_case == "underwater_shocked_bubble")
+	{
+		double rho_preshock = 1.0;
+		double p_preshock = 1.0;
+		double u_preshock = 0.0;
+		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
+		double rho_postshock = 1.31;
+		double p_postshock = 19000.0;
+		double u_postshock = 67.32;
+		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
+		double rho2 = 0.0012;
+		double p2 = 1.0;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double v = 0.0;
+		double z;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				double rho1, u, e1;
+				
+				if (cc(0) < 2.4)
+				{
+					rho1 = rho_preshock;
+					u = u_preshock;
+					e1 = e_preshock;
+				}
+				else
+				{
+					rho1 = rho_postshock;
+					u = u_postshock;
+					e1 = e_postshock;
+				}
+				
+				// Set z as fraction of area inside circle of radius 3 at (6, 6)
+				
+				int numsamples = 10;
+				int totalnumsamples = numsamples*numsamples;
+				int numinside = 0;
+				double delx = params.dx/numsamples;
+				double dely = params.dy/numsamples;
+				
+				Eigen::Vector2d BL;
+				BL(0) = cc(0) - 0.5 * params.dx;
+				BL(1) = cc(1) - 0.5 * params.dy;
+				
+				for (int a=0; a<numsamples; a++)
+				{
+					for (int b=0; b<numsamples; b++)
+					{
+						Eigen::Vector2d samplepos;
+						samplepos(0) = BL(0) + (a + 0.5) * delx;
+						samplepos(1) = BL(1) + (b + 0.5) * dely;
+						
+						samplepos(0) -= 6.0;
+						samplepos(1) -= 6.0;
+						
+						if (samplepos.norm() <= 3.0) numinside++;
+					}
+				}
+
+				z = 1.0 - double(numinside)/totalnumsamples;
+				
+				ICgrid[i][j](0) = z * rho1;
+				ICgrid[i][j](1) = (1.0 - z) * rho2;
+				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
+				ICgrid[i][j](5) = z;
+			}
+		}		
+	}
+	else if (SF.test_case == "underwater_explosion")
+	{
+		double rho_preshock = 1.0;
+		double p_preshock = 1.0e5;
+		double u_preshock = 0.0;
+		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
+		double rho_postshock = 1270.0;
+		double p_postshock = 8.29e8;
+		double u_postshock = 0.0;
+		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
+		double rho2 = 1000.0;
+		double p2 = 1.0e5;
+		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double v = 0.0;
+		double z;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				double rho1, u, e1;
+				
+				if (cc(0) > -0.1)
+				{
+					rho1 = rho_preshock;
+					u = u_preshock;
+					e1 = e_preshock;
+				}
+				else
+				{
+					rho1 = rho_postshock;
+					u = u_postshock;
+					e1 = e_postshock;
+				}
+				
+				// Set z as fraction of area inside circle of radius 1 at (0, 0) or above line y=2.5
+				
+				int numsamples = 10;
+				int totalnumsamples = numsamples*numsamples;
+				int numinside = 0;
+				double delx = params.dx/numsamples;
+				double dely = params.dy/numsamples;
+				
+				Eigen::Vector2d BL;
+				BL(0) = cc(0) - 0.5 * params.dx;
+				BL(1) = cc(1) - 0.5 * params.dy;
+				
+				for (int a=0; a<numsamples; a++)
+				{
+					for (int b=0; b<numsamples; b++)
+					{
+						Eigen::Vector2d samplepos;
+						samplepos(0) = BL(0) + (a + 0.5) * delx;
+						samplepos(1) = BL(1) + (b + 0.5) * dely;
+						
+						samplepos(0) -= 0.0;
+						samplepos(1) -= 0.0;
+						
+						if (samplepos.norm() <= 1.0 || samplepos(1) > 2.5)
+						{ 
+							numinside++;
+						}
 					}
 				}
 
