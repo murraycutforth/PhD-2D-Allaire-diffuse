@@ -122,8 +122,9 @@ inline bool is_physical_state (double gamma1, double gamma2, double pinf1, doubl
 	double v = U(3) / rho;
 	double e = U(4) / rho - 0.5 * (u * u + v * v);
 	double z = U(5);
+	double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
 	
-	return U(0) >= 0.0 && U(1) >= 0.0 && e >= 0.0 && z >= 0.0 && z <= 1.0;
+	return U(0) >= 0.0 && U(1) >= 0.0 && e >= 0.0 && p >= 0.0 && z >= 0.0 && z <= 1.0;
 }
 
 

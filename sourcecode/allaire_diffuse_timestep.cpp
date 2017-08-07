@@ -7,10 +7,10 @@
 
 double allaire_diffuse :: compute_dt (const gridtype& grid, const sim_info& params, int n, double t)
 {
-	double maxu = 0.0, maxv = 0.0;
+	double maxu = 0.0, maxv = 0.0, mass1sum = 0.0, mass2sum = 0.0;
 	
 	
-	#pragma omp parallel for schedule(dynamic)
+	#pragma omp parallel for schedule(dynamic) reduction(+:mass1sum, mass2sum)
 	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
 	{
 		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
@@ -24,8 +24,17 @@ double allaire_diffuse :: compute_dt (const gridtype& grid, const sim_info& para
 			double c = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rho, p, z);
 			maxu = std::max(maxu, fabs(u) + c);
 			maxv = std::max(maxv, fabs(v) + c);
+			mass1sum += grid[i][j](0);
+			mass2sum += grid[i][j](1);
 		}
 	}
+	
+	
+	// Record fluid masses at this time step
+	
+	time.push_back(t);
+	mass1.push_back(mass1sum * params.dx * params.dy);
+	mass2.push_back(mass2sum * params.dx * params.dy);
 	
 	double CFL = params.CFL;
 	

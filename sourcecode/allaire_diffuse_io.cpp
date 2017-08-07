@@ -206,7 +206,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.y0 = 0.0;
 		params.dx = 325.0/params.Nx;
 		params.dy = 89.0/params.Ny;
-		params.T = 250.0;
+		params.T = 280.0;
 		params.BC_L = "transmissive";
 		params.BC_T = "reflective";
 		params.BC_R = "transmissive";
@@ -903,7 +903,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				
 				double rho1, u, e1;
 				
-				if (cc(0) < 2.4)
+				if (cc(0) > 2.4)
 				{
 					rho1 = rho_preshock;
 					u = u_preshock;
@@ -1263,7 +1263,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 						
 						double theta = atan2(samplepos(1), samplepos(0));
 						theta -= atan(1) * 2;
-						double r_interface = 20.0 + 0.4 * cos(31 * theta) + 0.4 * cos(25 * theta) + 0.4 * cos(39 * theta);
+						double r_interface = 20.0 + 0.4 * cos(22 * theta) + 0.4 * cos(17 * theta) + 0.3 * cos(29 * theta);
 						
 						if (samplepos.norm() <= r_interface) numinside++;
 					}
@@ -1433,6 +1433,22 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 	
 	std::cout << "[allaire_diffuse] Output to gnuplot complete" << std::endl;
 }
+
+void allaire_diffuse :: gnuplot_masschange (const sim_info& params)
+{
+	std::string filename = params.outputname + "-masschange.dat";
+	std::ofstream outfile;
+	outfile.open(filename);
+		
+	for (unsigned int k=0; k<time.size(); k++)
+	{
+		outfile << time[k] << " " << (mass1[k] - mass1[0])/mass1[0] << " " << (mass2[k] - mass2[0])/mass2[0] << std::endl;
+	}
+	
+	outfile.close();
+	
+	std::cout << "[allaire_diffuse] Mass change output complete" << std::endl;
+}
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)
 {
@@ -1440,6 +1456,12 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 	{
 		vtk_output(grid, params, n, t);
 		gnuplot_lineout(grid, params, n, t);
+		
+		if (t == params.T)
+		{
+			gnuplot_masschange(params);
+		}
+			
 	}
 	else if (params.output_freq != 0.0)
 	{

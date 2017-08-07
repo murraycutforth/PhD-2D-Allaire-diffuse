@@ -16,6 +16,7 @@
 #include "settings_file.hpp"
 #include "flux_solver_base.hpp"
 #include "zupdate.hpp"
+#include <vector>
 
 class allaire_diffuse : public problem_base {
 	
@@ -37,6 +38,13 @@ class allaire_diffuse : public problem_base {
 	// Algorithm for updating diffuse volume fractions
 	
 	std::shared_ptr<zupdate_base> zupdate_ptr;
+	
+	
+	// Storage for mass of each fluid at each time step
+	
+	std::vector<double> time;
+	std::vector<double> mass1;
+	std::vector<double> mass2;
 	
 	
 	// Constructors
@@ -62,6 +70,8 @@ class allaire_diffuse : public problem_base {
 	void vtk_output (const gridtype& grid, const sim_info& params, int n, double t);
 	
 	void gnuplot_lineout (const gridtype& grid, const sim_info& params, int n, double t);
+	
+	void gnuplot_masschange (const sim_info& params);
 	
 	
 	// Over-ride all pure virtual member functions of problem_base

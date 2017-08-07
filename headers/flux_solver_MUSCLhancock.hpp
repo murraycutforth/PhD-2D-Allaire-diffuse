@@ -47,18 +47,23 @@ vectype MC_limited_slope (const vectype& diff_L, const vectype& diff_R)
 	/*
 	 * Monotone central limited slope. Less diffusive than minmod.
 	 */
-	 
+
 	vectype slope (6);
-	double sigmai;
 	
 	for (int k=0; k<6; k++)
 	{
-		if (diff_L(k) > 0.0 && diff_R(k) > 0.0) sigmai = 1.0;
-		else if (diff_L(k) < 0.0 && diff_R(k) < 0.0) sigmai = - 1.0;
-		else sigmai = 0.0;
-		
-		slope(k) = sigmai * std::min(0.5 * fabs(diff_L(k) + diff_R(k)), 
-						std::min(2.0 * fabs(diff_L(k)), 2.0 * fabs(diff_R(k))));
+		if (diff_R(k) >= 0.0 && diff_L(k) >= 0.0)
+		{
+			slope(k) = std::min(0.5 * (diff_L(k) + diff_R(k)), std::min(2.0 * diff_L(k), 2.0 * diff_R(k)));
+		}
+		else if (diff_R(k) <= 0.0 && diff_L(k) <= 0.0)
+		{
+			slope(k) = std::max(0.5 * (diff_L(k) + diff_R(k)), std::max(2.0 * diff_L(k), 2.0 * diff_R(k)));
+		}
+		else
+		{
+			slope(k) = 0.0;
+		}
 	}
 	
 	return slope;
@@ -128,8 +133,6 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 		
 		// Compute limited slopes of primitive variables using slope limiter
 		
-		/*
-				
 		diff_L = prim_L_n - conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[0]);
 		diff_C = prim_R_n - prim_L_n;
 		diff_R = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[3]) - prim_R_n;
@@ -137,13 +140,10 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 		del_L = slopelimiter(diff_L, diff_C);
 		del_R = slopelimiter(diff_C, diff_R);
 		
-		*/
 		
 		
 		// OR compute slopes using characteristic limiting
-		
-		
-		
+		/*	
 		std::vector<vectype> jumpsL (3, vectype(6));
 		std::vector<vectype> jumpsR (3, vectype(6));
 		
@@ -164,8 +164,23 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 		{
 			del_R += slopelimiter(jumpsL[k], jumpsR[k]);
 		}
+		*/
 		
 		
+		// Catch and correct for unphysical slope reconstructions
+		
+		UL = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, prim_L_n + 0.5 * del_L);
+		UR = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, prim_R_n - 0.5 * del_R);
+		if ( is_physical_state(gamma1, gamma2, pinf1, pinf2, UL)
+			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UR)
+		   )
+		{}
+		else
+		{
+			del_L = Eigen::VectorXd::Zero(6);
+			del_R = Eigen::VectorXd::Zero(6);
+			std::cout << "[MUSCLHANCOCK] Unphysical state created by slope extrapolation." << std::endl;
+		}
 		
 		
 		
@@ -194,24 +209,15 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 		{}
 		else
 		{
-			double rhoL = UL(0) + UL(1);
-			double uL = UL(2) / rhoL;
-			double vL = UL(3) / rhoL;
-			double eL = UL(4) / rhoL - 0.5 * (uL * uL + vL * vL);
-			double zL = UL(5);
-			double rhoR = UR(0) + UR(1);
-			double uR = UR(2) / rhoR;
-			double vR = UR(3) / rhoR;
-			double eR = UR(4) / rhoR - 0.5 * (uR * uR + vR * vR);
-			double zR = UR(5);
-			
-			if (rhoL < 0 || rhoR < 0 || UL(0) < 0 || UL(1) < 0 || UR(0) < 0 || UR(1) < 0) std::cout << "bad density" << std::endl;
-			if (zL < 0 || zL > 1 || zR < 0 || zL > 1) std::cout << "bad volume fraction" << std::endl;
-			if (eL < 0 || eR < 0) std::cout << "bad internal energy" << std::endl;
-			
+			std::cout << "rhoz1L = " << UL(0) << std::endl;
+			std::cout << "rhoz1R = " << UR(0) << std::endl;
+			std::cout << "rhoz2L = " << UL(1) << std::endl;
+			std::cout << "rhoz2R = " << UR(1) << std::endl;
+			std::cout << "zL = " << UL(5) << std::endl;
+			std::cout << "zR = " << UR(5) << std::endl;
 			std::cout << "[MUSCLHANCOCK] Unphysical state created by time evolution." << std::endl;
-			UL = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, stencil[1]);
-			UR = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, stencil[2]);
+			UL = stencil[1];
+			UR = stencil[2];
 		}
 		
 		flux = RS_ptr->solve_RP(UL, UR, &u_star);
