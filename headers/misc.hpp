@@ -91,6 +91,13 @@ inline vectype primitives_to_conserved (const binarySGparams& eosparams, const v
 	return conserved;
 }
 
+inline vectype primitives_to_conserved (const binarySGparams& eosparams, double rhoz1, double rhoz2, double u, double v, double p, double z)
+{
+	vectype W (6);
+	W << rhoz1, rhoz2, u, v, p, z;
+	return primitives_to_conserved(eosparams, W);
+}
+
 inline void A_primitive_vars (const binarySGparams& eosparams, const vectype& W, Matrix6d& A)
 {
 	/*

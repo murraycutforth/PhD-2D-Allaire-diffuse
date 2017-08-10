@@ -1,7 +1,18 @@
 /*
  *	DESCRIPTION:	An abstract base class for the formulae used to
  *			update the volume fractions in the diffuse
- *			interface model.
+ *			interface model. The volume fractions obey:
+ * 
+ * 				Dz/Dt = 0
+ * 
+ * 			where D/Dt is the material derivative with velocity u:
+ * 
+ * 				D/Dt = partial / partial t + u . grad
+ * 
+ * 			The two discretisations are the first order
+ * 			accurate upwind method, and a second order
+ * 			method which uses star states obtained from the
+ * 			MUSCL slope reconstruction of z and u.
  * 
  * 	AUTHOR:		Murray Cutforth
  * 	DATE:		25/07/2017

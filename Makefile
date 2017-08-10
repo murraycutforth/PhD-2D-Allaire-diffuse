@@ -3,7 +3,8 @@
 #
 # External dependencies
 #	- The header-only Eigen library. Download from eigen.tuxfamily.org
-#	- My own 2D-HCLframework headers. Download from https://github.com/murraycutforth/2D-HCLsolver-framework
+#	- My own PhD-2D-HCLframework headers. Download from https://github.com/murraycutforth/PhD-2D-HCLsolver-framework
+#	- My own PhD-Common headers. Download from https://github.com/murraycutforth/PhD-Common
 #
 # Based on the file at http://hiltmon.com/
 #
@@ -13,7 +14,8 @@ TARGET := 2D-Allaire-diffuse
 
 # External header files
 EIGEN := -I/home/raid/mcc74/Libraries/eigen-v3.3.4
-HCLFRAMEWORK := -I/home/raid/mcc74/Documents/phd_17/2D-HCLsolver-framework
+HCLFRAMEWORK := -I/home/raid/mcc74/Documents/phd_17/PhD-2D-HCLsolver-framework
+COMMON := -I/home/raid/mcc74/Documents/phd_17/PhD-Common
 
 # Folders
 BUILDDIR := objectfiles
@@ -27,7 +29,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 
 # Folder Lists
 BUILDLIST := $(BUILDDIR)
-EXTINCLIST := $(EIGEN) $(HCLFRAMEWORK) $(INCLIST)
+EXTINCLIST := $(EIGEN) $(HCLFRAMEWORK) $(COMMON) $(INCLIST)
 
 # Shared Compiler Flags
 OPLEVEL := -O3

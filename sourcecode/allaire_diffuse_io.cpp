@@ -10,27 +10,14 @@
 #include <fstream>
 #include <string>
 
-std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info& params)
+void allaire_diffuse :: set_parameters (std::string test_case, sim_info& params, binarySGparams& eosparams)
 {
-	params.Nx = SF.Nx;
-	params.Ny = SF.Ny;
-	params.CFL = SF.CFL;
-	params.outputname = SF.basename;
-	params.output_freq = SF.output_freq;
-	
-	std::shared_ptr<riemann_solver_base> RS_ptr = nullptr;
-	
-	double gamma1, gamma2, pinf1, pinf2;
-	
-	
-	// EOS parameters, computational domain and boundary conditions
-	
-	if (SF.test_case == "ST1_x" || SF.test_case == "ST1_y")
+	if (test_case == "ST1_x" || test_case == "ST1_y")
 	{
-		gamma1 = 1.4;
-		gamma2 = 2.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 2.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -42,12 +29,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "ST2_x" || SF.test_case == "ST2_y")
+	else if (test_case == "ST2_x" || test_case == "ST2_y")
 	{
-		gamma1 = 4.4;
-		gamma2 = 1.4;
-		pinf1 = 600000000.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 4.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 600000000.0;
+		eosparams.pinf2 = 0.0;
 
 		params.x0 = -2.0;
 		params.y0 = -2.0;
@@ -59,12 +46,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "TTC4_x_pure" || SF.test_case == "TTC4_y_pure")
+	else if (test_case == "TTC4_x_pure" || test_case == "TTC4_y_pure")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -76,12 +63,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "TTC1_x_pure" || SF.test_case == "TTC1_y_pure")
+	else if (test_case == "TTC1_x_pure" || test_case == "TTC1_y_pure")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -93,12 +80,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "TTC2_x_pure" || SF.test_case == "TTC2_y_pure")
+	else if (test_case == "TTC2_x_pure" || test_case == "TTC2_y_pure")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -110,12 +97,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "TTC3_x_pure" || SF.test_case == "TTC3_y_pure")
+	else if (test_case == "TTC3_x_pure" || test_case == "TTC3_y_pure")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -127,12 +114,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "TTC5_x_pure" || SF.test_case == "TTC5_y_pure")
+	else if (test_case == "TTC5_x_pure" || test_case == "TTC5_y_pure")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -144,12 +131,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "circular_explosion")
+	else if (test_case == "circular_explosion")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.4;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -161,14 +148,14 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "underwater_shocked_bubble")
+	else if (test_case == "underwater_shocked_bubble")
 	{
 		// See "Practical techniques in ghost fluid method..", Xu, Communications in computational physics, 2016
 		
-		gamma1 = 7.15;
-		gamma2 = 1.4;
-		pinf1 = 3309.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 7.15;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 3309.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -180,12 +167,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "underwater_explosion")
+	else if (test_case == "underwater_explosion")
 	{
-		gamma1 = 1.4;
-		gamma2 = 7.15;
-		pinf1 = 0.0;
-		pinf2 = 3.309e8;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 7.15;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 3.309e8;
 		
 		params.x0 = -5.0;
 		params.y0 = -5.0;
@@ -197,12 +184,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
 	}
-	else if (SF.test_case == "shocked_helium_bubble")
+	else if (test_case == "shocked_helium_bubble")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.667;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.667;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -214,12 +201,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "reflective";
 	}
-	else if (SF.test_case == "shocked_SF6")
+	else if (test_case == "shocked_SF6")
 	{
-		gamma1 = 1.4;
-		gamma2 = 1.076;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.076;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -231,14 +218,14 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "reflective";
 		params.BC_B = "reflective";
 	}
-	else if (SF.test_case == "RMI_SF6")
+	else if (test_case == "RMI_SF6")
 	{
 		// From "A volume of fluid method based ghost fluid method for compressible multi-fluid flows" - Computers & Fluids - 2014
 		
-		gamma1 = 1.4;
-		gamma2 = 1.093;
-		pinf1 = 0.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.093;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = 0.0;
@@ -250,12 +237,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		params.BC_R = "transmissive";
 		params.BC_B = "reflective";
 	}
-	else if (SF.test_case == "tin_air_implosion")
+	else if (test_case == "tin_air_implosion")
 	{
-		gamma1 = 3.27;
-		gamma2 = 1.4;
-		pinf1 = 149500.0;
-		pinf2 = 0.0;
+		eosparams.gamma1 = 3.27;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 149500.0;
+		eosparams.pinf2 = 0.0;
 		
 		params.x0 = 0.0;
 		params.y0 = -25.0;
@@ -271,6 +258,106 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	{
 		assert(!"[allaire_diffuse] Invalid test_case in settings file.");
 	}
+}
+
+void allaire_diffuse :: set_halfspace_IC (const vectype& U_under, const double a, const double b, const double c, gridtype& grid, const sim_info& params)
+{
+	/*
+	 * Set every cell where a*x + b*y <= c to the state U_under.
+	 */
+	 
+	for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+	{
+		for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+		{
+			Eigen::Vector2d cc = params.cellcentre_coord(i, j);
+			
+			if (cc(0)*a + cc(1)*b <= c)
+			{
+				grid[i][j] = U_under;
+			}
+		}
+	}
+}
+
+void allaire_diffuse :: set_planar_IC (const vectype& U_under, const vectype& U_over, const double a, const double b, const double c, gridtype& grid, const sim_info& params)
+{
+	/*
+	 * Set every cell where a*x + b*y <= c to the state U_under,
+	 * otherwise U_over. Useful for planar initial conditions.
+	 */
+	 
+	for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+	{
+		for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+		{
+			Eigen::Vector2d cc = params.cellcentre_coord(i, j);
+			
+			if (cc(0)*a + cc(1)*b <= c)
+			{
+				grid[i][j] = U_under;
+			}
+			else
+			{
+				grid[i][j] = U_over;
+			}
+		}
+	}
+}
+
+
+void allaire_diffuse :: set_circular_IC (const vectype& W_in, const vectype& W_out, const Eigen::Vector2d& centre, const double R, gridtype& grid, const sim_info& params, const int N)
+{
+	/*
+	 * Set state according to weighting of volume fraction inside/outside
+	 * the circle, according to Monte Carlo estimate using N^2 samples
+	 */
+	 
+	for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+	{
+		for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+		{
+			int totalnumsamples = N*N;
+			int numinside = 0;
+			double delx = params.dx/N;
+			double dely = params.dy/N;
+			
+			Eigen::Vector2d cc = params.cellcentre_coord(i, j);
+			Eigen::Vector2d BL;
+			BL(0) = cc(0) - 0.5 * params.dx;
+			BL(1) = cc(1) - 0.5 * params.dy;
+			Eigen::Vector2d samplepos;
+			
+			for (int a=0; a<N; a++)
+			{
+				for (int b=0; b<N; b++)
+				{
+					samplepos(0) = BL(0) + (a + 0.5) * delx;
+					samplepos(1) = BL(1) + (b + 0.5) * dely;
+					
+					samplepos -= centre;
+					
+					if (samplepos.norm() <= R) numinside++;
+				}
+			}
+
+			double frac = double(numinside)/totalnumsamples;
+			
+			vectype W = frac * W_in + (1.0 - frac) * W_out;
+			grid[i][j] = primitives_to_conserved(eosparams, W);
+		}
+	}
+}
+
+
+std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info& params)
+{
+	params.Nx = SF.Nx;
+	params.Ny = SF.Ny;
+	params.CFL = SF.CFL;
+	params.outputname = SF.basename;
+	params.output_freq = SF.output_freq;
+	set_parameters(SF.test_case, params, eosparams);
 	
 	
 	// Number of ghost cells needed
@@ -293,9 +380,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	// Riemann solver object
 	
+	std::shared_ptr<riemann_solver_base> RS_ptr = nullptr;	
+	
 	if (SF.riemann_solver == "HLLC")
 	{
-		RS_ptr = std::make_shared<HLLC_riemann_solver>(params, gamma1, gamma2, pinf1, pinf2);
+		RS_ptr = std::make_shared<HLLC_riemann_solver>(params, eosparams.gamma1, eosparams.gamma2, eosparams.pinf1, eosparams.pinf2);
 	}
 	else
 	{
@@ -307,12 +396,12 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	if (SF.flux_solver == "Godunov")
 	{
-		FS_ptr = std::make_shared<flux_solver_godunov>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
+		FS_ptr = std::make_shared<flux_solver_godunov>(RS_ptr, params, eosparams.gamma1, eosparams.gamma2, eosparams.pinf1, eosparams.pinf2);
 		zupdate_ptr = std::make_shared<zupdate_upwind>();
 	}
 	else if (SF.flux_solver == "MUSCL")
 	{
-		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK>(RS_ptr, params, gamma1, gamma2, pinf1, pinf2);
+		FS_ptr = std::make_shared<flux_solver_MUSCLHANCOCK>(RS_ptr, params, eosparams.gamma1, eosparams.gamma2, eosparams.pinf1, eosparams.pinf2);
 		zupdate_ptr = std::make_shared<zupdate_secondorder>();
 	}
 	else
@@ -330,725 +419,189 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	if (SF.test_case == "ST1_x" || SF.test_case == "ST1_y")
 	{
-		double rho1 = 1.0;
-		double p1 = 1.0;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 0.125;
-		double p2 = 0.1;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u = 0.0;
-		double v = 0.0;
-		double z;
+		vectype Uleft = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 0.0, 0.125, 0.0, 0.0, 0.1, 0.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "ST1_x")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				if (SF.test_case == "ST1_x")
-				{
-					if (cc(0) < 0.5)
-					{
-						z = 1.0;
-					}
-					else
-					{
-						z = 0.0;
-					}
-				}
-				else
-				{
-					if (cc(1) < 0.5)
-					{
-						z = 1.0;
-					}
-					else
-					{
-						z = 0.0;
-					}
-				}
-				
-				ICgrid[i][j](0) = z * rho1;
-				ICgrid[i][j](1) = (1.0 - z) * rho2;
-				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
-				ICgrid[i][j](5) = z;
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.5, ICgrid, params);
+		}
+		else if (SF.test_case == "ST1_y")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.5, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "ST2_x" || SF.test_case == "ST2_y")
 	{
-		double rho1 = 1000.0;
-		double p1 = 1000000000.0;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 50.0;
-		double p2 = 100000.0;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u = 0.0;
-		double v = 0.0;
-		double z;
+		vectype Uleft = primitives_to_conserved(eosparams, 1000.0, 0.0, 0.0, 0.0, 1000000000.0, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 0.0, 50.0, 0.0, 0.0, 100000.0, 0.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "ST2_x")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
-				
-				if (SF.test_case == "ST2_x")
-				{
-					if (cc(0) < 0.7)
-					{
-						// Fluid 1 here
-						z = 1.0;
-					}
-					else
-					{
-						// Fluid 2 here
-						z = 0.0;
-					}
-				}
-				else
-				{
-					if (cc(1) < 0.7)
-					{
-						// Fluid 1 here
-						z = 1.0;
-					}
-					else
-					{
-						// Fluid 2 here
-						z = 0.0;
-					}
-				}
-				
-				ICgrid[i][j](0) = z * rho1;
-				ICgrid[i][j](1) = (1.0 - z) * rho2;
-				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
-				ICgrid[i][j](5) = z;
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.7, ICgrid, params);
+		}
+		else if (SF.test_case == "ST2_y")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.7, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "TTC5_x_pure" || SF.test_case == "TTC5_y_pure")
 	{
-		double rho1 = 5.99924;
-		double p1 = 460.894;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 5.99242;
-		double p2 = 46.0950;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u1 = 19.5975;
-		double u2 = -6.19633;
-		double v = 0.0;
-		double z = 1.0;
+		vectype Uleft = primitives_to_conserved(eosparams, 5.99924, 0.0, 19.5975, 0.0, 460.894, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 5.99242, 0.0, -6.19633, 0.0, 46.0950, 1.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "TTC5_x_pure")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				if (SF.test_case == "TTC5_x_pure")
-				{
-					if (cc(0) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-				else
-				{					
-					if (cc(1) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho1;
-						ICgrid[i][j](3) = u1 * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho2;
-						ICgrid[i][j](3) = u2 * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.5, ICgrid, params);
+		}
+		else if (SF.test_case == "TTC5_y_pure")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.5, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "TTC1_x_pure" || SF.test_case == "TTC1_y_pure")
 	{
-		double rho1 = 1.0;
-		double p1 = 1.0;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 0.125;
-		double p2 = 0.1;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u1 = 0.0;
-		double u2 = 0.0;
-		double v = 0.0;
-		double z = 1.0;
+		vectype Uleft = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 0.125, 0.0, 0.0, 0.0, 0.1, 1.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "TTC1_x_pure")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				if (SF.test_case == "TTC1_x_pure")
-				{
-					if (cc(0) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-				else
-				{					
-					if (cc(1) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.5, ICgrid, params);
+		}
+		else if (SF.test_case == "TTC1_y_pure")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.5, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "TTC2_x_pure" || SF.test_case == "TTC2_y_pure")
 	{
-		double rho1 = 1.0;
-		double p1 = 0.4;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 1.0;
-		double p2 = 0.4;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u1 = -2.0;
-		double u2 = 2.0;
-		double v = 0.0;
-		double z = 1.0;
+		vectype Uleft = primitives_to_conserved(eosparams, 1.0, 0.0, -2.0, 0.0, 0.4, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 1.0, 0.0, 2.0, 0.0, 0.4, 1.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "TTC2_x_pure")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				if (SF.test_case == "TTC2_x_pure")
-				{
-					if (cc(0) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-				else
-				{					
-					if (cc(1) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho1;
-						ICgrid[i][j](3) = u1 * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho2;
-						ICgrid[i][j](3) = u2 * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.5, ICgrid, params);
+		}
+		else if (SF.test_case == "TTC2_y_pure")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.5, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "TTC3_x_pure" || SF.test_case == "TTC3_y_pure")
 	{
-		double rho1 = 1.0;
-		double p1 = 1000.0;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 1.0;
-		double p2 = 0.01;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u1 = 0.0;
-		double u2 = 0.0;
-		double v = 0.0;
-		double z = 1.0;
+		vectype Uleft = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 1000.0, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 0.01, 1.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "TTC3_x_pure")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				if (SF.test_case == "TTC3_x_pure")
-				{
-					if (cc(0) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-				else
-				{					
-					if (cc(1) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho1;
-						ICgrid[i][j](3) = u1 * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho2;
-						ICgrid[i][j](3) = u2 * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.5, ICgrid, params);
+		}
+		else if (SF.test_case == "TTC3_y_pure")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.5, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "TTC4_x_pure" || SF.test_case == "TTC4_y_pure")
 	{
-		double rho1 = 1.0;
-		double p1 = 0.1;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 1.0;
-		double p2 = 100.0;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u1 = 0.0;
-		double u2 = 0.0;
-		double v = 0.0;
-		double z = 1.0;
+		vectype Uleft = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 0.1, 1.0);
+		vectype Uright = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 100.0, 1.0);
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		if (SF.test_case == "TTC4_x_pure")
 		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				if (SF.test_case == "TTC4_x_pure")
-				{
-					if (cc(0) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u1 * rho1;
-						ICgrid[i][j](3) = v * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = u2 * rho2;
-						ICgrid[i][j](3) = v * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-				else
-				{					
-					if (cc(1) < 0.5)
-					{
-						ICgrid[i][j](0) = z * rho1;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho1;
-						ICgrid[i][j](3) = u1 * rho1;
-						ICgrid[i][j](4) = rho1 * e1 + 0.5 * rho1 * (u1*u1 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-					else
-					{
-						ICgrid[i][j](0) = z * rho2;
-						ICgrid[i][j](1) = 0.0;
-						ICgrid[i][j](2) = v * rho2;
-						ICgrid[i][j](3) = u2 * rho2;
-						ICgrid[i][j](4) = rho2 * e2 + 0.5 * rho2 * (u2*u2 + v*v);
-						ICgrid[i][j](5) = z;
-					}
-				}
-			}
+			set_planar_IC(Uleft, Uright, 1.0, 0.0, 0.5, ICgrid, params);
+		}
+		else if (SF.test_case == "TTC4_y_pure")
+		{
+			set_planar_IC(Uleft, Uright, 0.0, 1.0, 0.5, ICgrid, params);
 		}
 	}
 	else if (SF.test_case == "circular_explosion")
 	{
-		double rho1 = 1.0;
-		double p1 = 1.0;
-		double e1 = eos::specific_ie(gamma1, pinf1, p1, rho1);
-		double rho2 = 0.125;
-		double p2 = 0.1;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double u = 0.0;
-		double v = 0.0;
-		double z;
+		vectype Win (6);
+		Win << 1.0, 0.0, 0.0, 0.0, 1.0, 1.0;
+		vectype Wout (6);
+		Wout << 0.0, 0.125, 0.0, 0.0, 0.1, 0.0;
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
-		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				// Set z as fraction of area inside circle of radius 0.4 at (1.0, 1.0)
-				
-				int numsamples = 10;
-				int totalnumsamples = numsamples*numsamples;
-				int numinside = 0;
-				double delx = params.dx/numsamples;
-				double dely = params.dy/numsamples;
-				
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);
-				Eigen::Vector2d BL;
-				BL(0) = cc(0) - 0.5 * params.dx;
-				BL(1) = cc(1) - 0.5 * params.dy;
-				
-				for (int a=0; a<numsamples; a++)
-				{
-					for (int b=0; b<numsamples; b++)
-					{
-						Eigen::Vector2d samplepos;
-						samplepos(0) = BL(0) + (a + 0.5) * delx;
-						samplepos(1) = BL(1) + (b + 0.5) * dely;
-						
-						samplepos(0) -= 1.0;
-						samplepos(1) -= 1.0;
-						
-						if (samplepos.norm() <= 0.4) numinside++;
-					}
-				}
-
-				z = double(numinside)/totalnumsamples;
-				
-				ICgrid[i][j](0) = z * rho1;
-				ICgrid[i][j](1) = (1.0 - z) * rho2;
-				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
-				ICgrid[i][j](5) = z;
-			}
-		}		
+		Eigen::Vector2d centre;
+		centre << 1.0, 1.0;
+		
+		double R = 0.4;
+		
+		set_circular_IC(Win, Wout, centre, R, ICgrid, params, 10);		
 	}
 	else if (SF.test_case == "shocked_helium_bubble")
 	{
-		double rho_preshock = 1.0;
-		double p_preshock = 1.0;
-		double u_preshock = 0.0;
-		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
-		double rho_postshock = 1.3764;
-		double p_postshock = 1.5698;
-		double u_postshock = -0.394;
-		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
-		double rho2 = 0.138;
-		double p2 = 1.0;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double v = 0.0;
-		double z;
+		vectype W_helium (6);
+		W_helium << 0.0, 0.138, 0.0, 0.0, 1.0, 0.0;
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
-		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				double rho1, u, e1;
-				
-				if (cc(0) < 225.0)
-				{
-					rho1 = rho_preshock;
-					u = u_preshock;
-					e1 = e_preshock;
-				}
-				else
-				{
-					rho1 = rho_postshock;
-					u = u_postshock;
-					e1 = e_postshock;
-				}
-				
-				// Set z as fraction of area inside circle of radius 25 at (175, 44.5)
-				
-				int numsamples = 10;
-				int totalnumsamples = numsamples*numsamples;
-				int numinside = 0;
-				double delx = params.dx/numsamples;
-				double dely = params.dy/numsamples;
-				
-				Eigen::Vector2d BL;
-				BL(0) = cc(0) - 0.5 * params.dx;
-				BL(1) = cc(1) - 0.5 * params.dy;
-				
-				for (int a=0; a<numsamples; a++)
-				{
-					for (int b=0; b<numsamples; b++)
-					{
-						Eigen::Vector2d samplepos;
-						samplepos(0) = BL(0) + (a + 0.5) * delx;
-						samplepos(1) = BL(1) + (b + 0.5) * dely;
-						
-						samplepos(0) -= 175.0;
-						samplepos(1) -= 44.5;
-						
-						if (samplepos.norm() <= 25.0) numinside++;
-					}
-				}
-
-				z = 1.0 - double(numinside)/totalnumsamples;
-				
-				ICgrid[i][j](0) = z * rho1;
-				ICgrid[i][j](1) = (1.0 - z) * rho2;
-				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
-				ICgrid[i][j](5) = z;
-			}
-		}		
+		vectype W_preshock (6);
+		W_preshock << 1.0, 0.0, 0.0, 0.0, 1.0, 1.0;
+		
+		vectype W_postshock (6);
+		W_postshock << 1.3764, 0.0, -0.394, 0.0, 1.5698, 1.0;
+		
+		Eigen::Vector2d centre;
+		centre << 175.0, 44.5;
+		
+		double R = 25.0;
+		
+		set_circular_IC(W_helium, W_preshock, centre, R, ICgrid, params, 10);
+		
+		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), -1.0, 0.0, 225.0, ICgrid, params);	
 	}
 	else if (SF.test_case == "underwater_shocked_bubble")
 	{
-		double rho_preshock = 1.0;
-		double p_preshock = 1.0;
-		double u_preshock = 0.0;
-		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
-		double rho_postshock = 1.31;
-		double p_postshock = 19000.0;
-		double u_postshock = 67.32;
-		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
-		double rho2 = 0.0012;
-		double p2 = 1.0;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double v = 0.0;
-		double z;
+		vectype W_air (6);
+		W_air << 0.0, 0.0012, 0.0, 0.0, 1.0, 0.0;
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
-		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				double rho1, u, e1;
-				
-				if (cc(0) > 2.4)
-				{
-					rho1 = rho_preshock;
-					u = u_preshock;
-					e1 = e_preshock;
-				}
-				else
-				{
-					rho1 = rho_postshock;
-					u = u_postshock;
-					e1 = e_postshock;
-				}
-				
-				// Set z as fraction of area inside circle of radius 3 at (6, 6)
-				
-				int numsamples = 10;
-				int totalnumsamples = numsamples*numsamples;
-				int numinside = 0;
-				double delx = params.dx/numsamples;
-				double dely = params.dy/numsamples;
-				
-				Eigen::Vector2d BL;
-				BL(0) = cc(0) - 0.5 * params.dx;
-				BL(1) = cc(1) - 0.5 * params.dy;
-				
-				for (int a=0; a<numsamples; a++)
-				{
-					for (int b=0; b<numsamples; b++)
-					{
-						Eigen::Vector2d samplepos;
-						samplepos(0) = BL(0) + (a + 0.5) * delx;
-						samplepos(1) = BL(1) + (b + 0.5) * dely;
-						
-						samplepos(0) -= 6.0;
-						samplepos(1) -= 6.0;
-						
-						if (samplepos.norm() <= 3.0) numinside++;
-					}
-				}
-
-				z = 1.0 - double(numinside)/totalnumsamples;
-				
-				ICgrid[i][j](0) = z * rho1;
-				ICgrid[i][j](1) = (1.0 - z) * rho2;
-				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
-				ICgrid[i][j](5) = z;
-			}
-		}		
+		vectype W_preshock (6);
+		W_preshock << 1.0, 0.0, 0.0, 0.0, 1.0, 1.0;
+		
+		vectype W_postshock (6);
+		W_postshock << 1.31, 0.0, 67.32, 0.0, 19000.0, 1.0;
+		
+		Eigen::Vector2d centre;
+		centre << 6.0, 6.0;
+		
+		double R = 3.0;
+		
+		set_circular_IC(W_air, W_preshock, centre, R, ICgrid, params, 10);
+		
+		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), 1.0, 0.0, 2.4, ICgrid, params);
 	}
 	else if (SF.test_case == "underwater_explosion")
 	{
-		double rho_preshock = 1.0;
-		double p_preshock = 1.0e5;
-		double u_preshock = 0.0;
-		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
-		double rho_postshock = 1270.0;
-		double p_postshock = 8.29e8;
-		double u_postshock = 0.0;
-		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
-		double rho2 = 1000.0;
-		double p2 = 1.0e5;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
-		double v = 0.0;
-		double z;
+		vectype W_water (6);
+		W_water << 0.0, 1000.0, 0.0, 0.0, 1.0e5, 0.0;
 		
-		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
-		{
-			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
-			{
-				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
-				
-				double rho1, u, e1;
-				
-				if (cc(0) > -0.1)
-				{
-					rho1 = rho_preshock;
-					u = u_preshock;
-					e1 = e_preshock;
-				}
-				else
-				{
-					rho1 = rho_postshock;
-					u = u_postshock;
-					e1 = e_postshock;
-				}
-				
-				// Set z as fraction of area inside circle of radius 1 at (0, 0) or above line y=2.5
-				
-				int numsamples = 10;
-				int totalnumsamples = numsamples*numsamples;
-				int numinside = 0;
-				double delx = params.dx/numsamples;
-				double dely = params.dy/numsamples;
-				
-				Eigen::Vector2d BL;
-				BL(0) = cc(0) - 0.5 * params.dx;
-				BL(1) = cc(1) - 0.5 * params.dy;
-				
-				for (int a=0; a<numsamples; a++)
-				{
-					for (int b=0; b<numsamples; b++)
-					{
-						Eigen::Vector2d samplepos;
-						samplepos(0) = BL(0) + (a + 0.5) * delx;
-						samplepos(1) = BL(1) + (b + 0.5) * dely;
-						
-						samplepos(0) -= 0.0;
-						samplepos(1) -= 0.0;
-						
-						if (samplepos.norm() <= 1.0 || samplepos(1) > 2.5)
-						{ 
-							numinside++;
-						}
-					}
-				}
-
-				z = 1.0 - double(numinside)/totalnumsamples;
-				
-				ICgrid[i][j](0) = z * rho1;
-				ICgrid[i][j](1) = (1.0 - z) * rho2;
-				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
-				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
-				ICgrid[i][j](5) = z;
-			}
-		}		
+		vectype W_air (6);
+		W_air << 1.0, 0.0, 0.0, 0.0, 1.0e5, 1.0;
+		
+		vectype W_airbubble (6);
+		W_airbubble << 1270.0, 0.0, 0.0, 0.0, 8.29e8, 1.0;
+		
+		Eigen::Vector2d centre;
+		centre << 0.0, 0.0;
+		
+		double R = 1.0;
+		
+		set_circular_IC(W_airbubble, W_water, centre, R, ICgrid, params, 10);
+		
+		set_halfspace_IC(primitives_to_conserved(eosparams, W_air), 0.0, -1.0, 2.5, ICgrid, params);
 	}
 	else if (SF.test_case == "shocked_SF6")
 	{
 		double rho_preshock = 1.153;
 		double p_preshock = 9.6856;
 		double u_preshock = 0.0;
-		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
+		double e_preshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_preshock, rho_preshock);
 		double rho_postshock = 1.6672;
 		double p_postshock = 16.3256;
 		double u_postshock = 1.33273;
-		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
+		double e_postshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_postshock, rho_postshock);
 		double rho2 = 5.805;
 		double p2 = 9.6856;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double e2 = eos::specific_ie(eosparams.gamma2, eosparams.pinf2, p2, rho2);
 		double v = 0.0;
 		double z;
 		
@@ -1118,14 +671,14 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		double rho_preshock = 1.0;
 		double p_preshock = 1.0;
 		double u_preshock = 0.0;
-		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
+		double e_preshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_preshock, rho_preshock);
 		double rho_postshock = 1.411;
 		double p_postshock = 1.628;
 		double u_postshock = -0.39;
-		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
+		double e_postshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_postshock, rho_postshock);
 		double rho2 = 5.04;
 		double p2 = 1.0;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double e2 = eos::specific_ie(eosparams.gamma2, eosparams.pinf2, p2, rho2);
 		double v = 0.0;
 		double z;
 		
@@ -1199,13 +752,13 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	{
 		double rho_preshock = 7.28;
 		double p_preshock = 1.0;
-		double e_preshock = eos::specific_ie(gamma1, pinf1, p_preshock, rho_preshock);
+		double e_preshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_preshock, rho_preshock);
 		double rho_postshock = 11.84;
 		double p_postshock = 1000000.0;
-		double e_postshock = eos::specific_ie(gamma1, pinf1, p_postshock, rho_postshock);
+		double e_postshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_postshock, rho_postshock);
 		double rho2 = 0.001;
 		double p2 = 1.0;
-		double e2 = eos::specific_ie(gamma2, pinf2, p2, rho2);
+		double e2 = eos::specific_ie(eosparams.gamma2, eosparams.pinf2, p2, rho2);
 		double v = 0.0;
 		double z;
 		
@@ -1289,10 +842,6 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		assert(!"[allaire_diffuse] Invalid test_case in settings file.");
 	}
 	
-	eosparams.gamma1 = gamma1;
-	eosparams.gamma2 = gamma2;
-	eosparams.pinf1 = pinf1;
-	eosparams.pinf2 = pinf2;
 	return std::make_shared<gridtype>(ICgrid);
 }
 

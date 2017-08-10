@@ -23,18 +23,26 @@ class allaire_diffuse : public problem_base {
 	
 protected:
 	
-	binarySGparams eosparams;	// EOS parameters of two stiffened gas fluids
+	binarySGparams eosparams;			// EOS parameters of two stiffened gas fluids
 	
 	std::shared_ptr<flux_solver_base> FS_ptr;	// Algorithm for updating conservative variables
 	
 	std::shared_ptr<zupdate_base> zupdate_ptr;	// Algorithm for updating diffuse volume fractions
 	
-	std::vector<double> time;	// Storage for mass of each fluid at each time step
+	std::vector<double> time;			// Storage for mass of each fluid at each time step
 	std::vector<double> mass1;
 	std::vector<double> mass2;
 	
 	
 	// Functions specific to this problem
+	
+	void set_parameters (std::string test_case, sim_info& params, binarySGparams& eosparams);
+	
+	void set_planar_IC (const vectype& U_under, const vectype& U_over, const double a, const double b, const double c, gridtype& grid, const sim_info& params);
+	
+	void set_halfspace_IC (const vectype& U_under, const double a, const double b, const double c, gridtype& grid, const sim_info& params);
+	
+	void set_circular_IC (const vectype& W_in, const vectype& W_out, const Eigen::Vector2d& centre, const double R, gridtype& grid, const sim_info& params, const int N);
 	
 	void set_boundary_conditions (gridtype& grid, const sim_info& params);
 	
