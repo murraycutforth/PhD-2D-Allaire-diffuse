@@ -89,7 +89,7 @@ vectype minmod_limited_slope (const vectype& diff_L, const vectype& diff_R)
 
 class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 	
-	public:
+private:
 	
 	vectype diff_L;
 	vectype diff_C;
@@ -103,6 +103,9 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 	vectype UR;
 	PVRS_riemann_solver pvrs;
 	std::function<vectype(const vectype&, const vectype&)> slopelimiter;
+	
+
+public:
 	
 	flux_solver_MUSCLHANCOCK (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:

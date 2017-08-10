@@ -19,18 +19,15 @@
 
 class flux_solver_base {
 	
-	public:
+protected:
+
+	std::shared_ptr<riemann_solver_base> RS_ptr;	// Riemann solver
 	
-	// Riemann solver
-	
-	std::shared_ptr<riemann_solver_base> RS_ptr;
-	
-	
-	// Constants used in computation
-	
-	const sim_info params;
+	const sim_info params;	// Constants used in computation
 	binarySGparams eosparams;
 	
+	
+public:
 	
 	flux_solver_base (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:

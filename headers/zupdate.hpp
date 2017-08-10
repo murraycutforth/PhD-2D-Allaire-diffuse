@@ -18,7 +18,7 @@
 
 class zupdate_base {
 	
-	public:
+public:
 	
 	virtual double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R) =0;
 	
@@ -28,7 +28,7 @@ class zupdate_base {
 
 class zupdate_upwind : public zupdate_base {
 	
-	public:
+public:
 	
 	double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R)
 	{
@@ -46,7 +46,7 @@ class zupdate_upwind : public zupdate_base {
 
 class zupdate_secondorder : public zupdate_base {
 	
-	public:
+public:
 	
 	double zupdate (double dx, double dt, double zL, double z, double zR, double u_star_L, double u_star_R, double z_star_L, double z_star_R)
 	{

@@ -48,7 +48,11 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 							    
 		if (!is_physical_state(eosparams, future_grid[i][j]))
 		{
-			std::cout << "Found unphysical state with rho = " << get_rho(future_grid[i][j]) << " and e = " << get_e(future_grid[i][j]) << std::endl;
+			double rho = get_rho(future_grid[i][j]);
+			double e = get_e(future_grid[i][j]);
+			double z = future_grid[i][j](5);
+			std::cout << "Found unphysical state with rho = " << rho << ", e = " << e << ", z = " << z << ", p = " << allairemodel::mixture_pressure(eosparams, rho, e, z) << std::endl;
+			assert(false);
 		}
 	}
 	

@@ -21,11 +21,14 @@
 
 class HLLC_riemann_solver : public riemann_solver_base {
 	
-	public:
+private:
 	
 	vectype U_starL;
 	vectype U_starR;
 	vectype HLLCflux;
+	
+
+public:
 	
 	HLLC_riemann_solver (sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:

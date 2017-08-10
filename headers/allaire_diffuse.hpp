@@ -21,42 +21,18 @@
 
 class allaire_diffuse : public problem_base {
 	
-	public:
+protected:
 	
-	// EOS parameters of two stiffened gas fluids
+	binarySGparams eosparams;	// EOS parameters of two stiffened gas fluids
 	
-	binarySGparams eosparams;
+	std::shared_ptr<flux_solver_base> FS_ptr;	// Algorithm for updating conservative variables
 	
+	std::shared_ptr<zupdate_base> zupdate_ptr;	// Algorithm for updating diffuse volume fractions
 	
-	// Algorithm for updating conservative variables
-	
-	std::shared_ptr<flux_solver_base> FS_ptr;
-	
-	
-	// Algorithm for updating diffuse volume fractions
-	
-	std::shared_ptr<zupdate_base> zupdate_ptr;
-	
-	
-	// Storage for mass of each fluid at each time step
-	
-	std::vector<double> time;
+	std::vector<double> time;	// Storage for mass of each fluid at each time step
 	std::vector<double> mass1;
 	std::vector<double> mass2;
 	
-	
-	// Constructors
-	
-	allaire_diffuse ()
-	{}
-	
-	allaire_diffuse (double gamma1, double gamma2, double pinf1, double pinf2, std::shared_ptr<flux_solver_base> FS_ptr, std::shared_ptr<zupdate_base> zupdate_ptr)
-	:
-		eosparams (gamma1, gamma2, pinf1, pinf2),
-		FS_ptr (FS_ptr),
-		zupdate_ptr (zupdate_ptr)
-	{}
-		
 	
 	// Functions specific to this problem
 	
@@ -87,6 +63,19 @@ class allaire_diffuse : public problem_base {
 	{
 		return U(4) / get_rho(U) - 0.5 * (get_u(U) * get_u(U) + get_v(U) * get_v(U));
 	}
+	
+	
+public:
+	
+	allaire_diffuse ()
+	{}
+	
+	allaire_diffuse (double gamma1, double gamma2, double pinf1, double pinf2, std::shared_ptr<flux_solver_base> FS_ptr, std::shared_ptr<zupdate_base> zupdate_ptr)
+	:
+		eosparams (gamma1, gamma2, pinf1, pinf2),
+		FS_ptr (FS_ptr),
+		zupdate_ptr (zupdate_ptr)
+	{}
 	
 	
 	// Over-ride all pure virtual member functions of problem_base

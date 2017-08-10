@@ -326,6 +326,8 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	// Initial states
 	
+	// TODO: refactor out much of this state setting into a function?
+	
 	if (SF.test_case == "ST1_x" || SF.test_case == "ST1_y")
 	{
 		double rho1 = 1.0;

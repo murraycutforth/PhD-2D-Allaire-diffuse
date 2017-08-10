@@ -17,7 +17,7 @@
 
 class flux_solver_godunov : public flux_solver_base {
 	
-	public:
+public:
 	
 	flux_solver_godunov (std::shared_ptr<riemann_solver_base> RS_ptr, sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:

@@ -17,13 +17,13 @@
 
 class riemann_solver_base {
 	
-	public:
+protected:
 	
-	// Constants used in computation
-	
-	const sim_info params;
+	const sim_info params;	// Constants used in computation
 	binarySGparams eosparams;
-	
+
+
+public:
 	
 	riemann_solver_base (sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:
