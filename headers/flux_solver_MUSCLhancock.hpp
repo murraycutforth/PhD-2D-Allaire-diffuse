@@ -3,18 +3,13 @@
  *			MUSCL-Hancock flux solver applied to the 
  *			five equation system of Allaire. The family
  * 			of methods described as MUSCL-Hancock is quite
- * 			wide, and a couple of different variations are
- * 			implemented here for comparison purposes.
+ * 			wide, the implementation here is as follows:
  * 
- * 			1)	- Conserved variable reconstruction
- * 				- Monotone - centred slope limiting
- * 				- Boundary flux time evolution with a
- * 				  separate half step evolution formula
- * 				  for volume fractions
- * 
- * 			2)	- Primitive variable reconstruction
+ * 				- Primitive variable reconstruction
  * 				- Minmod slope limiting
  * 				- Jacobian-based half step evolution 
+ * 
+ * 			Other slope limiters are available to try.
  *  
  * 	AUTHOR:		Murray Cutforth
  * 	DATE:		25/07/2017
@@ -128,14 +123,14 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star)
 	{
 		assert(stencil.size() == 4);
-		prim_L_n = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[1]);
-		prim_R_n = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[2]);
+		prim_L_n = conserved_to_primitives(eosparams, stencil[1]);
+		prim_R_n = conserved_to_primitives(eosparams, stencil[2]);
 		
 		// Compute limited slopes of primitive variables using slope limiter
 		
-		diff_L = prim_L_n - conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[0]);
+		diff_L = prim_L_n - conserved_to_primitives(eosparams, stencil[0]);
 		diff_C = prim_R_n - prim_L_n;
-		diff_R = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, stencil[3]) - prim_R_n;
+		diff_R = conserved_to_primitives(eosparams, stencil[3]) - prim_R_n;
 		
 		del_L = slopelimiter(diff_L, diff_C);
 		del_R = slopelimiter(diff_C, diff_R);
@@ -169,10 +164,10 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 		
 		// Catch and correct for unphysical slope reconstructions
 		
-		UL = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, prim_L_n + 0.5 * del_L);
-		UR = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, prim_R_n - 0.5 * del_R);
-		if ( is_physical_state(gamma1, gamma2, pinf1, pinf2, UL)
-			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UR)
+		UL = primitives_to_conserved(eosparams, prim_L_n + 0.5 * del_L);
+		UR = primitives_to_conserved(eosparams, prim_R_n - 0.5 * del_R);
+		if ( is_physical_state(eosparams, UL)
+			&& is_physical_state(eosparams, UR)
 		   )
 		{}
 		else
@@ -186,25 +181,25 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 		
 		// Compute left/right state to be supplied to Riemann solver
 		
-		A_primitive_vars(gamma1, gamma2, pinf1, pinf2, prim_L_n, A);
+		A_primitive_vars(eosparams, prim_L_n, A);
 		
 		UL = prim_L_n + 0.5 * del_L - 0.5 * (dt / dx) * A * del_L;
 		
-		A_primitive_vars(gamma1, gamma2, pinf1, pinf2, prim_R_n, A);
+		A_primitive_vars(eosparams, prim_R_n, A);
 		
 		UR = prim_R_n - 0.5 * del_R - 0.5 * (dt / dx) * A * del_R;
 		
 		
 		// Convert back to conserved variables
 		
-		UL = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, UL);
-		UR = primitives_to_conserved(gamma1, gamma2, pinf1, pinf2, UR);
+		UL = primitives_to_conserved(eosparams, UL);
+		UR = primitives_to_conserved(eosparams, UR);
 
 		
 		// Use zero slope if reconstructed pressure or density goes negative
 		
-		if ( is_physical_state(gamma1, gamma2, pinf1, pinf2, UL)
-			&& is_physical_state(gamma1, gamma2, pinf1, pinf2, UR)
+		if ( is_physical_state(eosparams, UL)
+			&& is_physical_state(eosparams, UR)
 		   )
 		{}
 		else
@@ -226,7 +221,7 @@ class flux_solver_MUSCLHANCOCK : public flux_solver_base {
 	
 	std::shared_ptr<flux_solver_base> clone ()
 	{
-		return std::make_shared<flux_solver_MUSCLHANCOCK>(RS_ptr->clone(), params, gamma1, gamma2, pinf1, pinf2);
+		return std::make_shared<flux_solver_MUSCLHANCOCK>(RS_ptr->clone(), params, eosparams.gamma1, eosparams.gamma2, eosparams.pinf1, eosparams.pinf2);
 	}
 };
 

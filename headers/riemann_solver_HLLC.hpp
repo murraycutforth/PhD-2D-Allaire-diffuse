@@ -37,7 +37,7 @@ class HLLC_riemann_solver : public riemann_solver_base {
 	
 	HLLC_riemann_solver (const HLLC_riemann_solver& other)
 	:
-		riemann_solver_base (other.params, other.gamma1, other.gamma2, other.pinf1, other.pinf2),
+		riemann_solver_base (other.params, other.eosparams.gamma1, other.eosparams.gamma2, other.eosparams.pinf1, other.eosparams.pinf2),
 		U_starL (6),
 		U_starR (6),
 		HLLCflux (6)
@@ -53,16 +53,16 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		double uL = UL(2) / rhoL;
 		double vL = UL(3) / rhoL;
 		double eL = UL(4) / rhoL - 0.5 * (uL * uL + vL * vL);
-		double pL = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoL, eL, zL);
-		double cL = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoL, pL, zL);
+		double pL = allairemodel::mixture_pressure(eosparams, rhoL, eL, zL);
+		double cL = allairemodel::mixture_soundspeed(eosparams, rhoL, pL, zL);
 		
 		double zR = UR(5);
 		double rhoR = UR(0) + UR(1);
 		double uR = UR(2) / rhoR;
 		double vR = UR(3) / rhoR;
 		double eR = UR(4) / rhoR - 0.5 * (uR * uR + vR * vR);
-		double pR = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoR, eR, zR);
-		double cR = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoR, pR, zR);
+		double pR = allairemodel::mixture_pressure(eosparams, rhoR, eR, zR);
+		double cR = allairemodel::mixture_soundspeed(eosparams, rhoR, pR, zR);
 		
 		double SR, SL;
 		
@@ -84,7 +84,7 @@ class HLLC_riemann_solver : public riemann_solver_base {
 			
 		if (p_pvrs > pL)
 		{
-			SL = uL - allairemodel::shock_speed_jump(gamma1, gamma2, pinf1, pinf2, pL, rhoL, p_pvrs, zL);
+			SL = uL - allairemodel::shock_speed_jump(eosparams, pL, rhoL, p_pvrs, zL);
 		}
 		else
 		{
@@ -92,7 +92,7 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		}
 		if (p_pvrs > pR)
 		{
-			SR = uR + allairemodel::shock_speed_jump(gamma1, gamma2, pinf1, pinf2, pR, rhoR, p_pvrs, zR);
+			SR = uR + allairemodel::shock_speed_jump(eosparams, pR, rhoR, p_pvrs, zR);
 		}
 		else
 		{
@@ -128,10 +128,10 @@ class HLLC_riemann_solver : public riemann_solver_base {
 		U_starR(5) = 0.0;
 		
 		HLLCflux = ((1.0 + std::copysign(1.0, u_star)) / 2.0)
-				* (flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UL) 
+				* (flux_conserved_var(eosparams, UL) 
 					+ std::min(0.0, SL) * (U_starL - UL))
 				+ ((1.0 - std::copysign(1.0, u_star)) / 2.0)
-				* (flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UR) 
+				* (flux_conserved_var(eosparams, UR) 
 					+ std::max(0.0, SR) * (U_starR - UR));
 		HLLCflux(5) = 0.0;
 		return HLLCflux;

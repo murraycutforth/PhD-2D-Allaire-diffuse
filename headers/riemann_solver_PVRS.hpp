@@ -34,7 +34,7 @@ class PVRS_riemann_solver : public riemann_solver_base {
 	
 	PVRS_riemann_solver (const PVRS_riemann_solver& other)
 	:
-		riemann_solver_base (other.params, other.gamma1, other.gamma2, other.pinf1, other.pinf2),
+		riemann_solver_base (other.params, other.eosparams.gamma1, other.eosparams.gamma2, other.eosparams.pinf1, other.eosparams.pinf2),
 		flux (6),
 		WR (6),
 		WL (6)
@@ -52,8 +52,8 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		double uL = UL(2) / rhoL;
 		double vL = UL(3) / rhoL;
 		double eL = UL(4) / rhoL - 0.5 * (uL * uL + vL * vL);
-		double pL = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoL, eL, zL);
-		double cL = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoL, pL, zL);
+		double pL = allairemodel::mixture_pressure(eosparams, rhoL, eL, zL);
+		double cL = allairemodel::mixture_soundspeed(eosparams, rhoL, pL, zL);
 		
 		double zR = UR(5);
 		double rhoR = UR(0) + UR(1);
@@ -62,8 +62,8 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		double uR = UR(2) / rhoR;
 		double vR = UR(3) / rhoR;
 		double eR = UR(4) / rhoR - 0.5 * (uR * uR + vR * vR);
-		double pR = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoR, eR, zR);
-		double cR = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoR, pR, zR);
+		double pR = allairemodel::mixture_pressure(eosparams, rhoR, eR, zR);
+		double cR = allairemodel::mixture_soundspeed(eosparams, rhoR, pR, zR);
 		
 		
 		// Averaged quantities in linear problem
@@ -89,7 +89,7 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		{
 			// Flux is left state
 			
-			flux = flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UL);
+			flux = flux_conserved_var(eosparams, UL);
 		}
 		else if (uavg > 0.0)
 		{
@@ -102,7 +102,7 @@ class PVRS_riemann_solver : public riemann_solver_base {
 			WR(4) = pstar;
 			WR(5) = zL;
 			
-			flux = flux_primitive_var(gamma1, gamma2, pinf1, pinf2, WR);
+			flux = flux_primitive_var(eosparams, WR);
 		}
 		else if (uavg + cavg > 0.0)
 		{
@@ -115,13 +115,13 @@ class PVRS_riemann_solver : public riemann_solver_base {
 			WR(4) = pstar;
 			WR(5) = zR;
 			
-			flux = flux_primitive_var(gamma1, gamma2, pinf1, pinf2, WR);
+			flux = flux_primitive_var(eosparams, WR);
 		}
 		else
 		{
 			// Flux is right state
 			
-			flux = flux_conserved_var(gamma1, gamma2, pinf1, pinf2, UR);
+			flux = flux_conserved_var(eosparams, UR);
 		}
 		
 		return flux;
@@ -140,8 +140,8 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		double uL = UL(2) / rhoL;
 		double vL = UL(3) / rhoL;
 		double eL = UL(4) / rhoL - 0.5 * (uL * uL + vL * vL);
-		double pL = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoL, eL, zL);
-		double cL = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoL, pL, zL);
+		double pL = allairemodel::mixture_pressure(eosparams, rhoL, eL, zL);
+		double cL = allairemodel::mixture_soundspeed(eosparams, rhoL, pL, zL);
 		
 		double zR = UR(5);
 		double rhoR = UR(0) + UR(1);
@@ -150,8 +150,8 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		double uR = UR(2) / rhoR;
 		double vR = UR(3) / rhoR;
 		double eR = UR(4) / rhoR - 0.5 * (uR * uR + vR * vR);
-		double pR = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rhoR, eR, zR);
-		double cR = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rhoR, pR, zR);
+		double pR = allairemodel::mixture_pressure(eosparams, rhoR, eR, zR);
+		double cR = allairemodel::mixture_soundspeed(eosparams, rhoR, pR, zR);
 		
 		
 		// Averaged quantities in linear problem
@@ -175,7 +175,7 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		
 		// Set jump over wave 1
 		
-		WL = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, UL);
+		WL = conserved_to_primitives(eosparams, UL);
 		
 		WR(0) = rhoz1starL;
 		WR(1) = rhoz2starL;
@@ -205,7 +205,7 @@ class PVRS_riemann_solver : public riemann_solver_base {
 		
 		WL = WR;
 		
-		WR = conserved_to_primitives(gamma1, gamma2, pinf1, pinf2, UR);
+		WR = conserved_to_primitives(eosparams, UR);
 		
 		jumps[2] = WR - WL;
 	}

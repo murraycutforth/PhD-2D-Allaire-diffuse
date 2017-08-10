@@ -1,6 +1,6 @@
 /*
- *	DESCRIPTION:	Unit test of the HCL framework which runs a
- *			simulation.
+ *	DESCRIPTION:	Given a settings file as a command line argument,
+ * 			this main function runs a single simulation.
  * 
  * 	AUTHOR:		Murray Cutforth
  * 	DATE:		21/07/2017

@@ -36,7 +36,7 @@ class flux_solver_godunov : public flux_solver_base {
 	
 	std::shared_ptr<flux_solver_base> clone ()
 	{
-		return std::make_shared<flux_solver_godunov>(RS_ptr->clone(), params, gamma1, gamma2, pinf1, pinf2);
+		return std::make_shared<flux_solver_godunov>(RS_ptr->clone(), params, eosparams.gamma1, eosparams.gamma2, eosparams.pinf1, eosparams.pinf2);
 	}
 };
 

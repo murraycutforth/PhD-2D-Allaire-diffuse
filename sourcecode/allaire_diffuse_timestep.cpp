@@ -20,8 +20,8 @@ double allaire_diffuse :: compute_dt (const gridtype& grid, const sim_info& para
 			double v = grid[i][j](3) / rho;
 			double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
 			double z = grid[i][j](5);
-			double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
-			double c = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rho, p, z);
+			double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
+			double c = allairemodel::mixture_soundspeed(eosparams, rho, p, z);
 			maxu = std::max(maxu, fabs(u) + c);
 			maxv = std::max(maxv, fabs(v) + c);
 			mass1sum += grid[i][j](0);

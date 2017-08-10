@@ -58,7 +58,7 @@ void allaire_diffuse :: update_col (const gridtype& grid, gridtype& future_grid,
 		future_grid[i][j](5) = zupdate_ptr->zupdate(params.dy, dt, transformed_row[i-1](5), transformed_row[i](5), transformed_row[i+1](5), 
 							    u_stars[i], u_stars[i+1], z_stars[i], z_stars[i+1]);
 		
-		assert(is_physical_state(gamma1, gamma2, pinf1, pinf2, future_grid[i][j]));
+		assert(is_physical_state(eosparams, future_grid[i][j]));
 	}
 	
 	

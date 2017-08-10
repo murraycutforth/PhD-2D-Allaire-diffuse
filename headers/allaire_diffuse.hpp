@@ -15,6 +15,7 @@
 #include "typedefs.hpp"
 #include "settings_file.hpp"
 #include "flux_solver_base.hpp"
+#include "stiffened_gas_eos.hpp"
 #include "zupdate.hpp"
 #include <vector>
 
@@ -22,12 +23,9 @@ class allaire_diffuse : public problem_base {
 	
 	public:
 	
-	// EOS parameters of two fluids
+	// EOS parameters of two stiffened gas fluids
 	
-	double gamma1;
-	double gamma2;
-	double pinf1;
-	double pinf2;
+	binarySGparams eosparams;
 	
 	
 	// Algorithm for updating conservative variables
@@ -54,10 +52,7 @@ class allaire_diffuse : public problem_base {
 	
 	allaire_diffuse (double gamma1, double gamma2, double pinf1, double pinf2, std::shared_ptr<flux_solver_base> FS_ptr, std::shared_ptr<zupdate_base> zupdate_ptr)
 	:
-		gamma1 (gamma1),
-		gamma2 (gamma2),
-		pinf1 (pinf1),
-		pinf2 (pinf2),
+		eosparams (gamma1, gamma2, pinf1, pinf2),
 		FS_ptr (FS_ptr),
 		zupdate_ptr (zupdate_ptr)
 	{}
@@ -72,6 +67,26 @@ class allaire_diffuse : public problem_base {
 	void gnuplot_lineout (const gridtype& grid, const sim_info& params, int n, double t);
 	
 	void gnuplot_masschange (const sim_info& params);
+	
+	double get_rho (const vectype& U)
+	{
+		return U(0) + U(1);
+	}
+	
+	double get_u (const vectype& U)
+	{
+		return U(2) / get_rho(U);
+	}
+	
+	double get_v (const vectype& U)
+	{
+		return U(3) / get_rho(U);
+	}
+	
+	double get_e (const vectype& U)
+	{
+		return U(4) / get_rho(U) - 0.5 * (get_u(U) * get_u(U) + get_v(U) * get_v(U));
+	}
 	
 	
 	// Over-ride all pure virtual member functions of problem_base
@@ -95,7 +110,7 @@ class allaire_diffuse : public problem_base {
 	
 	std::shared_ptr<problem_base> clone ()
 	{
-		return std::make_shared<allaire_diffuse>(gamma1, gamma2, pinf1, pinf2, FS_ptr->clone(), zupdate_ptr->clone());
+		return std::make_shared<allaire_diffuse>(eosparams.gamma1, eosparams.gamma2, eosparams.pinf1, eosparams.pinf2, FS_ptr->clone(), zupdate_ptr->clone());
 	}
 };
 

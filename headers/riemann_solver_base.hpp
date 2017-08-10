@@ -12,6 +12,7 @@
 
 #include "sim_info.hpp"
 #include "typedefs.hpp"
+#include "stiffened_gas_eos.hpp"
 #include <memory>
 
 class riemann_solver_base {
@@ -21,19 +22,13 @@ class riemann_solver_base {
 	// Constants used in computation
 	
 	const sim_info params;
-	const double gamma1;
-	const double gamma2;
-	const double pinf1;
-	const double pinf2;
+	binarySGparams eosparams;
 	
 	
 	riemann_solver_base (sim_info params, double gamma1, double gamma2, double pinf1, double pinf2)
 	:
 		params (params),
-		gamma1 (gamma1),
-		gamma2 (gamma2),
-		pinf1 (pinf1),
-		pinf2 (pinf2)
+		eosparams (gamma1, gamma2, pinf1, pinf2)
 	{}
 	
 	virtual vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr) =0;

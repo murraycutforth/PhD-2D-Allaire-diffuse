@@ -16,7 +16,7 @@
 #include <iostream>
 #include <cassert>
 
-inline vectype flux_conserved_var (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& U)
+inline vectype flux_conserved_var (const binarySGparams& eosparams, const vectype& U)
 {
 	/*
 	 * The flux of conserved variables in the x-direction
@@ -27,7 +27,7 @@ inline vectype flux_conserved_var (double gamma1, double gamma2, double pinf1, d
 	double u = U(2) / rho;
 	double v = U(3) / rho;
 	double e = U(4) / rho - 0.5 * (u * u + v * v);
-	double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, U(5));
+	double p = allairemodel::mixture_pressure(eosparams, rho, e, U(5));
 	
 	flux(0) = U(0) * u;
 	flux(1) = U(1) * u;
@@ -39,11 +39,11 @@ inline vectype flux_conserved_var (double gamma1, double gamma2, double pinf1, d
 	return flux;
 }
 
-inline vectype flux_primitive_var (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& W)
+inline vectype flux_primitive_var (const binarySGparams& eosparams, const vectype& W)
 {
 	vectype flux (6);
 	double rho = W(0) + W(1);
-	double e = allairemodel::mixture_specific_ie(gamma1, gamma2, pinf1, pinf2, rho, W(4), W(5));
+	double e = allairemodel::mixture_specific_ie(eosparams, rho, W(4), W(5));
 	double E = rho * e + 0.5 * rho * (W(2) * W(2) + W(3) * W(3));
 	
 	flux(0) = W(0) * W(2);
@@ -56,14 +56,14 @@ inline vectype flux_primitive_var (double gamma1, double gamma2, double pinf1, d
 	return flux;
 }
 
-inline vectype conserved_to_primitives (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& U)
+inline vectype conserved_to_primitives (const binarySGparams& eosparams, const vectype& U)
 {
 	vectype prims (6);
 	double rho = U(0) + U(1);
 	double u = U(2) / rho;
 	double v = U(3) / rho;
 	double e = U(4) / rho - 0.5 * (u * u + v * v);
-	double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, U(5));
+	double p = allairemodel::mixture_pressure(eosparams, rho, e, U(5));
 	
 	prims(0) = U(0);
 	prims(1) = U(1);
@@ -75,11 +75,11 @@ inline vectype conserved_to_primitives (double gamma1, double gamma2, double pin
 	return prims;
 }
 
-inline vectype primitives_to_conserved (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& W)
+inline vectype primitives_to_conserved (const binarySGparams& eosparams, const vectype& W)
 {
 	vectype conserved (6);
 	double rho = W(0) + W(1);
-	double e = allairemodel::mixture_specific_ie(gamma1, gamma2, pinf1, pinf2, rho, W(4), W(5));
+	double e = allairemodel::mixture_specific_ie(eosparams, rho, W(4), W(5));
 	
 	conserved(0) = W(0);
 	conserved(1) = W(1);
@@ -91,7 +91,7 @@ inline vectype primitives_to_conserved (double gamma1, double gamma2, double pin
 	return conserved;
 }
 
-inline void A_primitive_vars (double gamma1, double gamma2, double pinf1, double pinf2, const vectype& W, Matrix6d& A)
+inline void A_primitive_vars (const binarySGparams& eosparams, const vectype& W, Matrix6d& A)
 {
 	/*
 	 * Use vector of primitive variables (W) to set the value of the
@@ -100,7 +100,7 @@ inline void A_primitive_vars (double gamma1, double gamma2, double pinf1, double
 	 */
 	 
 	double rho = W(0) + W(1);
-	double c = allairemodel::mixture_soundspeed(gamma1, gamma2, pinf1, pinf2, rho, W(4), W(5));
+	double c = allairemodel::mixture_soundspeed(eosparams, rho, W(4), W(5));
 	
 	A = W(2) * Eigen::Matrix<double, 6, 6>::Identity();
 	A(0,2) = W(0);
@@ -109,7 +109,7 @@ inline void A_primitive_vars (double gamma1, double gamma2, double pinf1, double
 	A(4,2) = rho * c * c;
 }
 
-inline bool is_physical_state (double gamma1, double gamma2, double pinf1, double pinf2, vectype& U)
+inline bool is_physical_state (const binarySGparams& eosparams, vectype& U)
 {
 	if (fabs(U(0)) < 1e-12) U(0) = 0.0;
 	if (fabs(U(1)) < 1e-12) U(1) = 0.0;
@@ -122,7 +122,7 @@ inline bool is_physical_state (double gamma1, double gamma2, double pinf1, doubl
 	double v = U(3) / rho;
 	double e = U(4) / rho - 0.5 * (u * u + v * v);
 	double z = U(5);
-	double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+	double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
 	
 	return U(0) >= 0.0 && U(1) >= 0.0 && e >= 0.0 && p >= 0.0 && z >= 0.0 && z <= 1.0;
 }

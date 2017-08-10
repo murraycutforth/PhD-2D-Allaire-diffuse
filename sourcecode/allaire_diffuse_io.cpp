@@ -20,6 +20,8 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	std::shared_ptr<riemann_solver_base> RS_ptr = nullptr;
 	
+	double gamma1, gamma2, pinf1, pinf2;
+	
 	
 	// EOS parameters, computational domain and boundary conditions
 	
@@ -1284,7 +1286,11 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	{
 		assert(!"[allaire_diffuse] Invalid test_case in settings file.");
 	}
-		
+	
+	eosparams.gamma1 = gamma1;
+	eosparams.gamma2 = gamma2;
+	eosparams.pinf1 = pinf1;
+	eosparams.pinf2 = pinf2;
 	return std::make_shared<gridtype>(ICgrid);
 }
 
@@ -1355,7 +1361,7 @@ void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params
 			double v = grid[i][j](3) / rho;
 			double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
 			double z = grid[i][j](5);
-			double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+			double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
 			outfile5 << p << "\n";
 		}
 	}
@@ -1403,7 +1409,7 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 		double v = grid[i][j](3) / rho;
 		double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
 		double z = grid[i][j](5);
-		double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+		double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
 			
 		outfile << x << " " << rho << " " << u << " " << v << " " << e << " " << p << " " << z << std::endl;
 	}
@@ -1424,7 +1430,7 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 		double v = grid[i][j](3) / rho;
 		double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
 		double z = grid[i][j](5);
-		double p = allairemodel::mixture_pressure(gamma1, gamma2, pinf1, pinf2, rho, e, z);
+		double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
 			
 		outfile2 << y << " " << rho << " " << u << " " << v << " " << e << " " << p << " " << z << std::endl;
 	}

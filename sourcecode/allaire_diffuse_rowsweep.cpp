@@ -46,7 +46,10 @@ void allaire_diffuse :: update_row (const gridtype& grid, gridtype& future_grid,
 		future_grid[i][j](5) = zupdate_ptr->zupdate(params.dx, dt, grid[i][j-1](5), grid[i][j](5), grid[i][j+1](5), 
 							    u_stars[j], u_stars[j+1], z_stars[j], z_stars[j+1]);
 							    
-		assert(is_physical_state(gamma1, gamma2, pinf1, pinf2, future_grid[i][j]));
+		if (!is_physical_state(eosparams, future_grid[i][j]))
+		{
+			std::cout << "Found unphysical state with rho = " << get_rho(future_grid[i][j]) << " and e = " << get_e(future_grid[i][j]) << std::endl;
+		}
 	}
 	
 }
