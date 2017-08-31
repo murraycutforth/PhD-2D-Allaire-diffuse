@@ -129,6 +129,7 @@ public:
 		prim_L_n = conserved_to_primitives(eosparams, stencil[1]);
 		prim_R_n = conserved_to_primitives(eosparams, stencil[2]);
 		
+		
 		// Compute limited slopes of primitive variables using slope limiter
 		
 		diff_L = prim_L_n - conserved_to_primitives(eosparams, stencil[0]);

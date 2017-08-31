@@ -10,13 +10,20 @@
 #ifndef ALLAIREDIFFUSEPROBLEM_H
 #define ALLAIREDIFFUSEPROBLEM_H
 
+// From PhD-2D-HCLsolver-framework
 #include "problem_base.hpp"
+
+// From PhD-Common
 #include "sim_info.hpp"
 #include "typedefs.hpp"
 #include "settings_file.hpp"
+
+// From this project
 #include "flux_solver_base.hpp"
 #include "stiffened_gas_eos.hpp"
 #include "zupdate.hpp"
+
+// From STL
 #include <vector>
 
 class allaire_diffuse : public problem_base {
@@ -99,6 +106,8 @@ public:
 	void update_row (const gridtype& grid, gridtype& future_grid, const sim_info& params, int i, double dt, double t);
 	
 	void update_col (const gridtype& grid, gridtype& future_grid, const sim_info& params, int j, double dt, double t);
+	
+	void unsplit_update (const gridtype& grid, gridtype& future_grid, const sim_info& params, int j, double dt, double t){}
 	
 	void post_sweep (gridtype& grid, gridtype& future_grid, const sim_info& params);
 	
