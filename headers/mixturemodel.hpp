@@ -10,6 +10,7 @@
 #ifndef MIXTUREMODEL_ALLAIRE_H
 #define MIXTUREMODEL_ALLAIRE_H
 
+#include "stiffened_gas_eos.hpp"
 #include <cmath>
 
 namespace allairemodel {

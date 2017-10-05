@@ -1,9 +1,9 @@
-Nx 300
-Ny 300
+Nx 601
+Ny 601
 CFL 0.8
 splitting_scheme naive_splitting
-test_case ST2_y
-output_freq 10000
-outputpath ./test/testoutput/
+test_case underwater_explosion_modified
+output_freq 100
+outputpath /local/data2/public/mcc74/2D-Allaire-diffuse/
 flux_solver MUSCL
 riemann_solver HLLC

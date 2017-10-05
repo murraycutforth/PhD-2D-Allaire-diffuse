@@ -178,11 +178,28 @@ void allaire_diffuse :: set_parameters (std::string test_case, sim_info& params,
 		params.y0 = -5.0;
 		params.dx = 10.0/params.Nx;
 		params.dy = 10.0/params.Ny;
-		params.T = 0.003;
+		params.T = 0.005;
 		params.BC_L = "transmissive";
 		params.BC_T = "transmissive";
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
+	}
+	else if (test_case == "underwater_explosion_modified")
+	{
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 7.15;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 3.309e8;
+		
+		params.x0 = -5.0;
+		params.y0 = -5.0;
+		params.dx = 10.0/params.Nx;
+		params.dy = 10.0/params.Ny;
+		params.T = 0.010;
+		params.BC_L = "transmissive";
+		params.BC_T = "reflective";
+		params.BC_R = "transmissive";
+		params.BC_B = "reflective";
 	}
 	else if (test_case == "shocked_helium_bubble")
 	{
@@ -414,9 +431,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 	
 	
 	// Initial states
-	
-	// TODO: refactor out much of this state setting into a function?
-	
+		
 	if (SF.test_case == "ST1_x" || SF.test_case == "ST1_y")
 	{
 		vectype Uleft = primitives_to_conserved(eosparams, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0);
@@ -547,7 +562,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		
 		set_circular_IC(W_helium, W_preshock, centre, R, ICgrid, params, 10);
 		
-		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), -1.0, 0.0, 225.0, ICgrid, params);	
+		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), -1.0, 0.0, -225.0, ICgrid, params);	
 	}
 	else if (SF.test_case == "underwater_shocked_bubble")
 	{
@@ -569,7 +584,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		
 		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), 1.0, 0.0, 2.4, ICgrid, params);
 	}
-	else if (SF.test_case == "underwater_explosion")
+	else if (SF.test_case == "underwater_explosion" || SF.test_case == "underwater_explosion_modified")
 	{
 		vectype W_water (6);
 		W_water << 0.0, 1000.0, 0.0, 0.0, 1.0e5, 0.0;
@@ -587,7 +602,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		
 		set_circular_IC(W_airbubble, W_water, centre, R, ICgrid, params, 10);
 		
-		set_halfspace_IC(primitives_to_conserved(eosparams, W_air), 0.0, -1.0, 2.5, ICgrid, params);
+		set_halfspace_IC(primitives_to_conserved(eosparams, W_air), 0.0, -1.0, -2.5, ICgrid, params);
 	}
 	else if (SF.test_case == "shocked_SF6")
 	{
@@ -918,6 +933,23 @@ void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params
 	}
 	
 	outfile5 << "FIELD FieldData 1\n";
+	outfile5 << "Soundspeed 1 " + std::to_string(params.Nx*params.Ny) + " double\n";
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			double rho = grid[i][j](0) + grid[i][j](1);
+			double u = grid[i][j](2) / rho;
+			double v = grid[i][j](3) / rho;
+			double e = grid[i][j](4) / rho - 0.5 * (u * u + v * v);
+			double z = grid[i][j](5);
+			double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
+			double c = allairemodel::mixture_soundspeed(eosparams, rho, p, z);
+			outfile5 << c << "\n";
+		}
+	}
+	
+	outfile5 << "FIELD FieldData 1\n";
 	outfile5 << "Specificinternalenergy 1 " + std::to_string(params.Nx*params.Ny) + " double\n";
 	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
 	{
@@ -1025,6 +1057,7 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 		if (n % params.output_freq == 0)
 		{
 			vtk_output(grid, params, n, t);
+			gnuplot_lineout(grid, params, n, t);
 		}
 	}
 }

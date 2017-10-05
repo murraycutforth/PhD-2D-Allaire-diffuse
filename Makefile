@@ -13,9 +13,9 @@
 TARGET := 2D-Allaire-diffuse
 
 # External header files
-EIGEN := -I/home/raid/mcc74/Libraries/eigen-v3.3.4
-HCLFRAMEWORK := -I/home/raid/mcc74/Documents/phd_17/PhD-2D-HCLsolver-framework
-COMMON := -I/home/raid/mcc74/Documents/phd_17/PhD-Common
+EIGEN := -I ~/Libraries/eigen-v3.3.4
+HCLFRAMEWORK := -I ./../PhD-2D-HCLsolver-framework
+COMMON := -I ./../PhD-Common
 
 # Folders
 BUILDDIR := objectfiles

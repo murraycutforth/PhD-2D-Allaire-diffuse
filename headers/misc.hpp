@@ -16,6 +16,18 @@
 #include <iostream>
 #include <cassert>
 
+inline double specific_ie (const vectype& U)
+{
+	/*
+	 * The specific internal energy from vector of conserved vars
+	 */
+	
+	double rho = U(0) + U(1);
+	double u = U(2) / rho;
+	double v = U(3) / rho;
+	return (U(4) / rho) - 0.5 * (u*u + v*v);
+}
+
 inline vectype flux_conserved_var (const binarySGparams& eosparams, const vectype& U)
 {
 	/*
@@ -129,9 +141,8 @@ inline bool is_physical_state (const binarySGparams& eosparams, vectype& U)
 	double v = U(3) / rho;
 	double e = U(4) / rho - 0.5 * (u * u + v * v);
 	double z = U(5);
-	double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
-	
-	return U(0) >= 0.0 && U(1) >= 0.0 && e >= 0.0 && p >= 0.0 && z >= 0.0 && z <= 1.0;
+		
+	return U(0) >= 0.0 && U(1) >= 0.0 && e >= 0.0 && z >= 0.0 && z <= 1.0;
 }
 
 
