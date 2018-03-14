@@ -1,5 +1,5 @@
 /*
- *	DESCRIPTION:	Miscellaneous useful functions
+ *	DESCRIPTION:	Miscellaneous useful functions for the Allaire system
  * 
  * 	AUTHOR:		Murray Cutforth
  * 	DATE:		24/07/2017
@@ -127,6 +127,18 @@ inline void A_primitive_vars (const binarySGparams& eosparams, const vectype& W,
 	A(2,4) = 1.0 / rho;
 	A(4,2) = rho * c * c;
 }
+
+inline bool is_physical_state (const binarySGparams& eosparams, const vectype& U)
+{
+	double rho = U(0) + U(1);
+	double u = U(2) / rho;
+	double v = U(3) / rho;
+	double e = U(4) / rho - 0.5 * (u * u + v * v);
+	double z = U(5);
+		
+	return U(0) >= 0.0 && U(1) >= 0.0 && e >= 0.0 && z >= 0.0 && z <= 1.0;
+}
+
 
 inline bool is_physical_state (const binarySGparams& eosparams, vectype& U)
 {

@@ -31,7 +31,7 @@ public:
 		eosparams (gamma1, gamma2, pinf1, pinf2)
 	{}
 	
-	virtual vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr) =0;
+	virtual vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr, double* v_star_ptr = nullptr) =0;
 	
 	virtual std::shared_ptr<riemann_solver_base> clone () =0;
 	

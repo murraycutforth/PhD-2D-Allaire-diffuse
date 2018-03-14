@@ -123,9 +123,14 @@ public:
 	{}
 		
 	
-	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star)
+	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star, double* p_star_ptr = nullptr, double* v_star_ptr = nullptr)
 	{
 		assert(stencil.size() == 4);
+		assert(is_physical_state(eosparams, stencil[0]));
+		assert(is_physical_state(eosparams, stencil[1]));
+		assert(is_physical_state(eosparams, stencil[2]));
+		assert(is_physical_state(eosparams, stencil[3]));
+		
 		prim_L_n = conserved_to_primitives(eosparams, stencil[1]);
 		prim_R_n = conserved_to_primitives(eosparams, stencil[2]);
 		
@@ -219,7 +224,8 @@ public:
 			UR = stencil[2];
 		}
 		
-		flux = RS_ptr->solve_RP(UL, UR, &u_star);
+		if (p_star_ptr) flux = RS_ptr->solve_RP(UL, UR, &u_star, p_star_ptr, v_star_ptr);
+		else flux = RS_ptr->solve_RP(UL, UR, &u_star);
 		z_star = 0.5 * (1.0 + std::copysign(1.0, u_star)) * UL(5) + 0.5 * (1.0 - std::copysign(1.0, u_star)) * UR(5);
 	}
 	

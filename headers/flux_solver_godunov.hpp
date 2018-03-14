@@ -24,11 +24,12 @@ public:
 		flux_solver_base(RS_ptr, params, gamma1, gamma2, pinf1, pinf2)
 	{}
 	
-	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star)
+	void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star, double* p_star_ptr = nullptr, double* v_star_ptr = nullptr)
 	{
 		assert(stencil.size() == 2);
-				
-		flux = RS_ptr->solve_RP(stencil[0], stencil[1], &u_star);
+			
+		if (p_star_ptr) flux = RS_ptr->solve_RP(stencil[0], stencil[1], &u_star, p_star_ptr, v_star_ptr);
+		else flux = RS_ptr->solve_RP(stencil[0], stencil[1], &u_star);
 				
 		z_star = ((1.0 + std::copysign(1.0, u_star)) / 2.0 ) * stencil[0](5)
 			 + ((1.0 - std::copysign(1.0, u_star)) / 2.0 ) * stencil[1](5);

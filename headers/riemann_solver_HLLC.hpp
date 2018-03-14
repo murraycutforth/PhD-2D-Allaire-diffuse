@@ -46,7 +46,7 @@ public:
 		HLLCflux (6)
 	{}
 	
-	vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr)
+	vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr, double* v_star_ptr = nullptr)
 	{
 		assert(UL.rows() == UR.rows());
 		assert(UL.rows() == 6);
@@ -70,16 +70,18 @@ public:
 		double SR, SL;
 		
 		// This formula from Garrick, Owkes, Regele (JCP 2017) exhibits some oscillation on TTC5 using Godunov's method
-		/*
+		
 		double u_avg = 0.5 * (uL + uR);
 		double c_avg = 0.5 * (cL + cR);
 		SL = std::min(u_avg - c_avg, uL - cL);
 		SR = std::max(u_avg + c_avg, uR + cR);
-		*/
+		
 		
 		
 		// Instead estimate the star-state pressure using the primitive variable linearised solver
 		// and if there is a shock compute speed using exact relations
+		
+		/*
 		
 		double rho_avg = 0.5 * (rhoL + rhoR);
 		double c_avg = 0.5 * (cL + cR);
@@ -102,6 +104,8 @@ public:
 			SR = uR + cR;
 		}
 		
+		*/
+		
 
 		
 		double u_star = (pR - pL + rhoL * uL * (SL - uL) - rhoR * uR * (SR - uR)) / (rhoL * (SL - uL) - rhoR * (SR - uR));
@@ -115,6 +119,11 @@ public:
 		
 		if (u_star_ptr) *u_star_ptr = u_star;
 		if (p_star_ptr) *p_star_ptr = p_star;
+		if (v_star_ptr)
+		{
+			if (u_star >= 0.0) *v_star_ptr = vL;
+			else *v_star_ptr = vR;
+		}
 		
 		U_starL(0) = factorL * UL(0);
 		U_starL(1) = factorL * UL(1);

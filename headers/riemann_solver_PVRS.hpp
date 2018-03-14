@@ -42,7 +42,7 @@ public:
 		WL (6)
 	{}
 	
-	vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr)
+	vectype solve_RP (const vectype& UL, const vectype& UR, double* u_star_ptr = nullptr, double* p_star_ptr = nullptr, double* v_star_ptr = nullptr)
 	{
 		assert(UL.rows() == UR.rows());
 		assert(UL.rows() == 6);
@@ -77,6 +77,8 @@ public:
 		double uavg = 0.5 * (uL + uR);
 		
 		
+		
+		
 		// Star states
 		
 		double pstar = 0.5 * (pL + pR) + 0.5 * (uL - uR) * rhoavg * cavg;
@@ -85,6 +87,14 @@ public:
 		double rhoz1starR = rhoz1R + rhoz1avg * (ustar - uR) / cavg;
 		double rhoz2starL = rhoz2L + rhoz2avg * (uL - ustar) / cavg;
 		double rhoz2starR = rhoz2R + rhoz2avg * (ustar - uR) / cavg;
+		
+		if (u_star_ptr) *u_star_ptr = ustar;
+		if (p_star_ptr) *p_star_ptr = pstar;
+		if (v_star_ptr)
+		{
+			if (ustar >= 0.0) *v_star_ptr = vL;
+			else *v_star_ptr = vR;
+		}
 		
 		
 		if (uavg - cavg > 0.0)

@@ -247,7 +247,7 @@ void allaire_diffuse :: set_parameters (std::string test_case, sim_info& params,
 		params.x0 = 0.0;
 		params.y0 = 0.0;
 		params.dx = 4.0/params.Nx;
-		params.dy = 1.0/params.Ny;
+		params.dy = 0.5/params.Ny;
 		params.T = 10.0;
 		params.BC_L = "transmissive";
 		params.BC_T = "reflective";
@@ -267,6 +267,23 @@ void allaire_diffuse :: set_parameters (std::string test_case, sim_info& params,
 		params.dy = 50.0/params.Ny;
 		params.T = 0.08;
 		params.BC_L = "reflective";
+		params.BC_T = "transmissive";
+		params.BC_R = "transmissive";
+		params.BC_B = "transmissive";
+	}
+	else if (test_case == "TSTM")
+	{
+		eosparams.gamma1 = 1.5;
+		eosparams.gamma2 = 1.4;
+		eosparams.pinf1 = 0.0;
+		eosparams.pinf2 = 0.0;
+		
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 7.0/params.Nx;
+		params.dy = 3.0/params.Ny;
+		params.T = 8.0;
+		params.BC_L = "transmissive";
 		params.BC_T = "transmissive";
 		params.BC_R = "transmissive";
 		params.BC_B = "transmissive";
@@ -681,6 +698,83 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 			}
 		}		
 	}
+	else if (SF.test_case == "TSTM")
+	{
+		double rho_preshock = 0.125;
+		double p_preshock = 0.1;
+		double u_preshock = 0.0;
+		double e_preshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_preshock, rho_preshock);
+		double rho_postshock = 1.0;
+		double p_postshock = 1.0;
+		double u_postshock = 0.0;
+		double e_postshock = eos::specific_ie(eosparams.gamma1, eosparams.pinf1, p_postshock, rho_postshock);
+		double rho2 = 1.0;
+		double p2 = 0.1;
+		double e2 = eos::specific_ie(eosparams.gamma2, eosparams.pinf2, p2, rho2);
+		double v = 0.0;
+		double z;
+		
+		for (int i=0; i<params.Ny + 2 * params.numGC; i++)
+		{
+			for (int j=0; j<params.Nx + 2 * params.numGC; j++)
+			{
+				Eigen::Vector2d cc = params.cellcentre_coord(i, j);	
+				
+				double rho1, u, e1;
+				
+				if (cc(0) > 1.0)
+				{
+					rho1 = rho_preshock;
+					u = u_preshock;
+					e1 = e_preshock;
+				}
+				else
+				{
+					rho1 = rho_postshock;
+					u = u_postshock;
+					e1 = e_postshock;
+				}
+				
+				
+				// Set z as fraction of area inside rectangular region [1.0, 8.0] x [0.0, 1.5]
+				
+				int numsamples = 10;
+				int totalnumsamples = numsamples*numsamples;
+				int numinside = 0;
+				double delx = params.dx/numsamples;
+				double dely = params.dy/numsamples;
+				
+				Eigen::Vector2d BL;
+				BL(0) = cc(0) - 0.5 * params.dx;
+				BL(1) = cc(1) - 0.5 * params.dy;
+				
+				for (int a=0; a<numsamples; a++)
+				{
+					for (int b=0; b<numsamples; b++)
+					{
+						Eigen::Vector2d samplepos;
+						samplepos(0) = BL(0) + (a + 0.5) * delx;
+						samplepos(1) = BL(1) + (b + 0.5) * dely;
+						
+						if (samplepos(0) >= 1.0 && samplepos(0) <= 8.0
+							&& samplepos(1) >= -1.0 && samplepos(1) <= 1.5) 
+						{
+							numinside++;
+						}
+					}
+				}
+
+				z = 1.0 - double(numinside)/totalnumsamples;
+				
+				ICgrid[i][j](0) = z * rho1;
+				ICgrid[i][j](1) = (1.0 - z) * rho2;
+				ICgrid[i][j](2) = u * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](3) = v * (z * rho1 + (1.0 - z) * rho2);
+				ICgrid[i][j](4) = z * rho1 * e1 + (1.0 - z) * rho2 * e2 + 0.5 * (z * rho1 + (1.0 - z) * rho2) * (u*u + v*v);
+				ICgrid[i][j](5) = z;
+			}
+		}		
+	}
 	else if (SF.test_case == "RMI_SF6")
 	{
 		double rho_preshock = 1.0;
@@ -722,7 +816,7 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 				// Set z as fraction of area inside sinusoidal interface
 				
 				double x1 = 2.9;
-				double eps = 0.1;
+				double eps = 0.2;
 				int numsamples = 10;
 				int totalnumsamples = numsamples*numsamples;
 				int numinside = 0;

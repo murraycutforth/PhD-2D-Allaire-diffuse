@@ -36,7 +36,7 @@ public:
 		eosparams (gamma1, gamma2, pinf1, pinf2)
 	{}
 	
-	virtual void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star) =0;
+	virtual void flux_computation (const std::vector<vectype>& stencil, vectype& flux, double dt, double dx, double& u_star, double& z_star, double* p_star_ptr = nullptr, double* v_star_ptr = nullptr) =0;
 	
 	virtual std::shared_ptr<flux_solver_base> clone () =0;
 };
