@@ -218,6 +218,21 @@ void allaire_diffuse :: set_parameters (std::string test_case, sim_info& params,
 		params.BC_R = "transmissive";
 		params.BC_B = "reflective";
 	}
+	else if (test_case == "shocked_R22_bubble")
+	{
+		eosparams.gamma1 = 1.4;
+		eosparams.gamma2 = 1.249;
+
+		params.x0 = 0.0;
+		params.y0 = 0.0;
+		params.dx = 0.445/params.Nx;
+		params.dy = 0.089/params.Ny;
+		params.T = 0.0005;
+		params.BC_L = "transmissive";
+		params.BC_T = "reflective";
+		params.BC_R = "transmissive";
+		params.BC_B = "reflective";
+	}
 	else if (test_case == "shocked_SF6")
 	{
 		eosparams.gamma1 = 1.4;
@@ -580,6 +595,26 @@ std::shared_ptr<gridtype> allaire_diffuse :: set_ICs (settings_file SF, sim_info
 		set_circular_IC(W_helium, W_preshock, centre, R, ICgrid, params, 10);
 		
 		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), -1.0, 0.0, -225.0, ICgrid, params);	
+	}
+	else if (SF.test_case == "shocked_R22_bubble")
+	{
+		vectype W_R22 (6);
+		W_R22 << 0.0, 3.863, 0.0, 0.0, 1.01325e5, 0.0;
+		
+		vectype W_preshock (6);
+		W_preshock << 1.225, 0.0, 0.0, 0.0, 1.01325e5, 1.0;
+		
+		vectype W_postshock (6);
+		W_postshock << 1.686, 0.0, -113.5, 0.0, 1.59e5, 1.0;
+		
+		Eigen::Vector2d centre;
+		centre << 0.225, 0.0445;
+		
+		double R = 0.025;
+		
+		set_circular_IC(W_R22, W_preshock, centre, R, ICgrid, params, 25);
+		
+		set_halfspace_IC(primitives_to_conserved(eosparams, W_postshock), -1.0, 0.0, -0.275, ICgrid, params);	
 	}
 	else if (SF.test_case == "underwater_shocked_bubble")
 	{
@@ -1070,6 +1105,79 @@ void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params
 	std::cout << "[allaire_diffuse] Output to vtk complete" << std::endl;
 }
 
+
+
+void allaire_diffuse :: gnuplot_output (const gridtype& grid, const sim_info& params, int n, double t)
+{
+	std::string filename = params.outputname + "-state-" + std::to_string(n) + ".dat";
+	std::ofstream outfile;
+	outfile.open(filename);
+	
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			Eigen::Vector2d CC = params.cellcentre_coord(i, j);
+			
+			double rho = grid[i][j](0) + grid[i][j](1);
+			double u = grid[i][j](2) / rho;
+			double v = grid[i][j](3) / rho;
+			double E = grid[i][j](4);
+			double e = E / rho - 0.5 * (u * u + v * v);
+			double z = grid[i][j](5);
+			double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
+			//double c = allairemodel::mixture_soundspeed(eosparams, rho, p, z);
+			
+			outfile << CC(0) << " " << CC(1) << " " << rho << " " << u << " " << v << " " << e << " " << z << " " << p << std::endl;
+		}
+		outfile << std::endl;
+	}
+	
+	outfile.close();
+	
+	
+	std::string filename2 = params.outputname + "-schlieren-" + std::to_string(n) + ".dat";
+	std::ofstream outfile2;
+	outfile2.open(filename2);
+
+	std::vector<double> allgrads;
+	
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			double rho_L = grid[i][j-1](0) + grid[i][j-1](1);
+			double rho_R = grid[i][j+1](0) + grid[i][j+1](1);
+			double rho_T = grid[i+1][j](0) + grid[i+1][j](1);
+			double rho_B = grid[i-1][j](0) + grid[i-1][j](1);
+
+			double gradx = (rho_R - rho_L) / (2.0 * params.dx);
+			double grady = (rho_T - rho_B) / (2.0 * params.dy);
+
+			allgrads.push_back(sqrt(gradx*gradx + grady*grady));
+		}
+	}
+
+	double maxgrad = *std::max_element(allgrads.begin(), allgrads.end());
+
+	int counter = 0;
+
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			Eigen::Vector2d CC = params.cellcentre_coord(i, j);
+
+			outfile2 << CC(0) << " " << CC(1) << " " << allgrads[counter] / maxgrad << std::endl;
+			counter++;
+		}
+		outfile2 << std::endl;
+	}
+
+	outfile2.close();
+}
+
+
 void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& params, int n, double t)
 {
 	std::string filename = params.outputname + "-lineoutx-" + std::to_string(n) + ".dat";
@@ -1135,9 +1243,13 @@ void allaire_diffuse :: gnuplot_masschange (const sim_info& params)
 	
 void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, int n, double t)
 {
+	const double outputinterval = params.T / params.output_freq;
+	static double lastoutputtime = 0.0;
+
 	if (n==0 || t==params.T)
 	{
 		vtk_output(grid, params, n, t);
+		gnuplot_output(grid, params, n, t);
 		gnuplot_lineout(grid, params, n, t);
 		
 		if (t == params.T)
@@ -1148,10 +1260,11 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 	}
 	else if (params.output_freq != 0.0)
 	{
-		if (n % params.output_freq == 0)
+		if (t - lastoutputtime > outputinterval)
 		{
 			vtk_output(grid, params, n, t);
-			gnuplot_lineout(grid, params, n, t);
+			gnuplot_output(grid, params, n, t);
+			lastoutputtime = t;
 		}
 	}
 }
