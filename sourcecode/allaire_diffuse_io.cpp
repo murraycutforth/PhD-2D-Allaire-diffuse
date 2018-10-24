@@ -1134,6 +1134,7 @@ void allaire_diffuse :: gnuplot_output (const gridtype& grid, const sim_info& pa
 	}
 	
 	outfile.close();
+	std::cout << "[allaire_diffuse] State output to gnuplot complete" << std::endl;
 	
 	
 	std::string filename2 = params.outputname + "-schlieren-" + std::to_string(n) + ".dat";
@@ -1175,6 +1176,7 @@ void allaire_diffuse :: gnuplot_output (const gridtype& grid, const sim_info& pa
 	}
 
 	outfile2.close();
+	std::cout << "[allaire_diffuse] Schlieren output to gnuplot complete" << std::endl;
 }
 
 
@@ -1222,7 +1224,7 @@ void allaire_diffuse :: gnuplot_lineout (const gridtype& grid, const sim_info& p
 	
 	outfile2.close();
 	
-	std::cout << "[allaire_diffuse] Output to gnuplot complete" << std::endl;
+	std::cout << "[allaire_diffuse] Lineout to gnuplot complete" << std::endl;
 }
 
 void allaire_diffuse :: gnuplot_masschange (const sim_info& params)

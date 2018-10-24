@@ -1,9 +1,9 @@
-Nx 3560
-Ny 712
+Nx 800
+Ny 80
 CFL 0.5
 splitting_scheme naive_splitting
 test_case shocked_R22_bubble
-output_freq 50
-outputpath /local/data2/public/mcc74/2D-Allaire-diffuse/thesisresults/R22_speed_measurements/
+output_freq 5
+outputpath ./output/
 flux_solver MUSCL
 riemann_solver HLLC

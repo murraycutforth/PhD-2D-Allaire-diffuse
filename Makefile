@@ -13,7 +13,6 @@
 TARGET := 2D-Allaire-diffuse
 
 # External header files
-EIGEN := -I ~/Libraries/eigen-v3.3.4
 HCLFRAMEWORK := -I ./../PhD-2D-HCLsolver-framework
 COMMON := -I ./../PhD-Common
 
@@ -29,7 +28,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.cpp=.o))
 
 # Folder Lists
 BUILDLIST := $(BUILDDIR)
-EXTINCLIST := $(EIGEN) $(HCLFRAMEWORK) $(COMMON) $(INCLIST)
+EXTINCLIST := $(HCLFRAMEWORK) $(COMMON) $(INCLIST)
 
 # Shared Compiler Flags
 OPLEVEL := -O3
