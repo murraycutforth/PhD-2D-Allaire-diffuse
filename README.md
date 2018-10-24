@@ -1,7 +1,8 @@
 # Allaire-diffuse
 
 This is a research code for two-material flow governed by the Euler equations, 
-implementing the five-equation model of Allaire. Two methods are implemented, both
+implementing the five-equation model of Allaire, where both fluids are governed 
+by the stiffened gas equation of state. Two methods are implemented, both
 using the HLLC approximate Riemann solver:
 1. Godunov's method, first order accurate
 2. MUSCL-Hancock method (with Minbee slope limiting), second order accurate
