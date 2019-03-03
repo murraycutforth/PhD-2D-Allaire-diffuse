@@ -1248,11 +1248,26 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 	const double outputinterval = params.T / params.output_freq;
 	static double lastoutputtime = 0.0;
 
+
+	// Hard-code some specific output times :(
+	
+	static std::vector<double> output_times {0.0001, 0.0002, 0.0003, 0.0004};
+
+	if (!output_times.empty())
+	{
+		if (t > output_times[0])
+		{
+			gnuplot_output(grid, params, n, t);
+			output_times.erase(output_times.begin());
+		}
+	}
+
+
 	if (n==0 || t==params.T)
 	{
-		vtk_output(grid, params, n, t);
+		//vtk_output(grid, params, n, t);
 		gnuplot_output(grid, params, n, t);
-		gnuplot_lineout(grid, params, n, t);
+		//gnuplot_lineout(grid, params, n, t);
 		
 		if (t == params.T)
 		{
