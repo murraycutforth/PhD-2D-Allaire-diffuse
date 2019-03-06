@@ -59,6 +59,8 @@ protected:
 
 	void gnuplot_output (const gridtype& grid, const sim_info& params, int n, double t);
 	
+	void gnuplot_schlieren (const gridtype& grid, const sim_info& params, int n, double t);
+	
 	void gnuplot_masschange (const sim_info& params);
 	
 	double get_rho (const vectype& U)

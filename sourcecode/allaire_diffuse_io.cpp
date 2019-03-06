@@ -227,7 +227,7 @@ void allaire_diffuse :: set_parameters (std::string test_case, sim_info& params,
 		params.y0 = 0.0;
 		params.dx = 0.445/params.Nx;
 		params.dy = 0.089/params.Ny;
-		params.T = 0.0005;
+		params.T = 0.001080;
 		params.BC_L = "transmissive";
 		params.BC_T = "reflective";
 		params.BC_R = "transmissive";
@@ -1106,38 +1106,10 @@ void allaire_diffuse :: vtk_output (const gridtype& grid, const sim_info& params
 }
 
 
-
-void allaire_diffuse :: gnuplot_output (const gridtype& grid, const sim_info& params, int n, double t)
+void allaire_diffuse :: gnuplot_schlieren (const gridtype& grid, const sim_info& params, int n, double t)
 {
-	std::string filename = params.outputname + "-state-" + std::to_string(n) + ".dat";
-	std::ofstream outfile;
-	outfile.open(filename);
-	
-	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
-	{
-		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
-		{
-			Eigen::Vector2d CC = params.cellcentre_coord(i, j);
-			
-			double rho = grid[i][j](0) + grid[i][j](1);
-			double u = grid[i][j](2) / rho;
-			double v = grid[i][j](3) / rho;
-			double E = grid[i][j](4);
-			double e = E / rho - 0.5 * (u * u + v * v);
-			double z = grid[i][j](5);
-			double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
-			//double c = allairemodel::mixture_soundspeed(eosparams, rho, p, z);
-			
-			outfile << CC(0) << " " << CC(1) << " " << rho << " " << u << " " << v << " " << e << " " << z << " " << p << std::endl;
-		}
-		outfile << std::endl;
-	}
-	
-	outfile.close();
-	std::cout << "[allaire_diffuse] State output to gnuplot complete" << std::endl;
-	
-	
-	std::string filename2 = params.outputname + "-schlieren-" + std::to_string(n) + ".dat";
+
+	std::string filename2 = params.outputname + "-schlieren-" + std::to_string(t) + ".dat";
 	std::ofstream outfile2;
 	outfile2.open(filename2);
 
@@ -1177,6 +1149,39 @@ void allaire_diffuse :: gnuplot_output (const gridtype& grid, const sim_info& pa
 
 	outfile2.close();
 	std::cout << "[allaire_diffuse] Schlieren output to gnuplot complete" << std::endl;
+}
+
+
+void allaire_diffuse :: gnuplot_output (const gridtype& grid, const sim_info& params, int n, double t)
+{
+	std::string filename = params.outputname + "-state-" + std::to_string(t) + ".dat";
+	std::ofstream outfile;
+	outfile.open(filename);
+	
+	for (int i=params.numGC; i<params.Ny + params.numGC; i++)
+	{
+		for (int j=params.numGC; j<params.Nx + params.numGC; j++)
+		{
+			Eigen::Vector2d CC = params.cellcentre_coord(i, j);
+			
+			double rho = grid[i][j](0) + grid[i][j](1);
+			double u = grid[i][j](2) / rho;
+			double v = grid[i][j](3) / rho;
+			double E = grid[i][j](4);
+			double e = E / rho - 0.5 * (u * u + v * v);
+			double z = grid[i][j](5);
+			double p = allairemodel::mixture_pressure(eosparams, rho, e, z);
+			//double c = allairemodel::mixture_soundspeed(eosparams, rho, p, z);
+			
+			outfile << CC(0) << " " << CC(1) << " " << rho << " " << u << " " << v << " " << e << " " << z << " " << p << std::endl;
+		}
+		outfile << std::endl;
+	}
+	
+	outfile.close();
+	std::cout << "[allaire_diffuse] State output to gnuplot complete" << std::endl;
+	
+	
 }
 
 
@@ -1251,13 +1256,13 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 
 	// Hard-code some specific output times :(
 	
-	static std::vector<double> output_times {0.0001, 0.0002, 0.0003, 0.0004};
+	static std::vector<double> output_times {0.000115, 0.000175, 0.000247, 0.000307, 0.000378, 0.000402, 0.000477, 0.001080};
 
 	if (!output_times.empty())
 	{
 		if (t > output_times[0])
 		{
-			gnuplot_output(grid, params, n, t);
+			gnuplot_schlieren(grid, params, n, t);
 			output_times.erase(output_times.begin());
 		}
 	}
@@ -1267,7 +1272,8 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 	{
 		//vtk_output(grid, params, n, t);
 		gnuplot_output(grid, params, n, t);
-		//gnuplot_lineout(grid, params, n, t);
+		gnuplot_schlieren(grid, params, n, t);
+		gnuplot_lineout(grid, params, n, t);
 		
 		if (t == params.T)
 		{
@@ -1279,8 +1285,9 @@ void allaire_diffuse :: output (const gridtype& grid, const sim_info& params, in
 	{
 		if (t - lastoutputtime > outputinterval)
 		{
-			vtk_output(grid, params, n, t);
+			//vtk_output(grid, params, n, t);
 			gnuplot_output(grid, params, n, t);
+			gnuplot_schlieren(grid, params, n, t);
 			lastoutputtime = t;
 		}
 	}
